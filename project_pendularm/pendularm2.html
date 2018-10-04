@@ -62,7 +62,7 @@ animate();
 function init() {
 
     // create pendulum object and its kinematic and dynamic parameters
-    pendulum = {length:[2.0,2.0], mass:[2.0,2.0], angle:[Math.PI/2,0], angle_dot:[0.0,0.0]};
+    //pendulum = {length:[2.0,2.0], mass:[2.0,2.0], angle:[Math.PI/2,0], angle_dot:[0.0,0.0]};
     pendulum = {length:[2.0,2.0], mass:[2.0,2.0], angle:[0,0], angle_dot:[0.0,0.0]};
     pendulum.angle_previous = [0,0];
 
@@ -161,13 +161,82 @@ function animate() {
     else
         servo_active_state = "active";
 
-
     // integrate pendulum state forward in time by dt
     if (typeof numerical_integrator === "undefined")
         numerical_integrator = "none";
-
+	if (numerical_integrator === "euler"){
+		//pendulum.angle_previous[0] = pendulum.angle[0];
+		//pendulum.angle_previous[1] = pendulum.angle[1];
+		a = [0,0];
+		a = pendulum_acceleration(pendulum, gravity);
+		pre_dot = [0,0];
+		pre_dot[0] = pendulum.angle_dot[0];
+		pre_dot[1] = pendulum.angle_dot[1];
+		pendulum.angle_dot[0] = pendulum.angle_dot[0] + dt*a[0];
+		pendulum.angle_dot[1] = pendulum.angle_dot[1] + dt*a[1];
+		pendulum.angle[0] = pendulum.angle[0] + dt*pre_dot[0];
+		pendulum.angle[1] = pendulum.angle[1] + dt*pre_dot[1];
+	}
         // STENCIL: a correct integrator is REQUIRED here for this assignment
-
+	else if (numerical_integrator === "verlet"){
+	
+	}
+	else if (numerical_integrator === "velocity verlet"){
+		a1 = [0,0];
+		a1 = pendulum_acceleration(pendulum, gravity);
+		pendulum.angle[0] = pendulum.angle[0] + pendulum.angle_dot[0]*dt + 0.5*a1[0]*Math.pow(dt,2);
+		pendulum.angle[1] = pendulum.angle[1] + pendulum.angle_dot[1]*dt + 0.5*a1[1]*Math.pow(dt,2);
+		a2 = [0,0];
+		a2 = pendulum_acceleration(pendulum, gravity);
+		pendulum.angle_dot[0] = pendulum.angle_dot[0] + 0.5*(a1[0] + a2[0])*dt;
+		pendulum.angle_dot[1] = pendulum.angle_dot[1] + 0.5*(a1[1] + a2[1])*dt;
+	}
+	else if (numerical_integrator === "runge-kutta"){
+		kx1 = [0,0];
+		kv1 = [0,0];
+		kx2 = [0,0];
+		kv2 = [0,0];
+		kx3 = [0,0];
+		kv3 = [0,0];
+		kx4 = [0,0];
+		kv4 = [0,0];
+		
+		kx1[0] = pendulum.angle[0];
+		kv1[0] = pendulum.angle_dot[0];
+		kx1[1] = pendulum.angle[1];
+		kv1[1] = pendulum.angle_dot[1];
+		a1 = [0,0];
+		a1 = pendulum_acceleration(pendulum, gravity);
+		
+		//a1 = pendulum.doubledot; 
+		kx2[0] = kx1[0] + (0.5*kv1[0]*dt);
+		kv2[0] = kv1[0] + (0.5*a1[0]*dt);
+		kx2[1] = kx1[1] + (0.5*kv1[1]*dt);
+		kv2[1] = kv1[1] + (0.5*a1[1]*dt);
+		a2 = [0,0];
+		a2 = rk_acceleration(kx2, kv2);
+		
+		//a2 = pendulum.doubledot;
+		kx3[0] = kx1[0] + (0.5*kv2[0]*dt);
+		kv3[0] = kv1[0] + (0.5*a2[0]*dt);
+		kx3[1] = kx1[1] + (0.5*kv2[1]*dt);
+		kv3[1] = kv1[1] + (0.5*a2[1]*dt);
+		a3 = [0,0];
+		a3 = rk_acceleration(kx3, kv3);
+		
+		//a3 = pendulum.doubledot;
+		kx4[0] = kx1[0] + (kv3[0]*dt);
+		kv4[0] = kv1[0] + (a3[0]*dt);
+		kx4[1] = kx1[1] + (kv3[1]*dt);
+		kv4[1] = kv1[1] + (a3[1]*dt);
+		a4 = [0,0];
+		a4 = rk_acceleration(kx4, kv4);
+		pendulum.angle[0] = pendulum.angle[0] + dt*(1/6*kv1[0] + 1/3*kv2[0] + 1/3*kv3[0] + 1/6*kv4[0]);
+		pendulum.angle[1] = pendulum.angle[1] + dt*(1/6*kv1[1] + 1/3*kv2[1] + 1/3*kv3[1] + 1/6*kv4[1]);
+		pendulum.angle_dot[0] = pendulum.angle_dot[0] + dt*(1/6*a1[0] + 1/3*a2[0] + 1/3*a3[0] + 1/6*a4[0]);
+		pendulum.angle_dot[1] = pendulum.angle_dot[1] + dt*(1/6*a1[1] + 1/3*a2[1] + 1/3*a3[1] + 1/6*a4[1]);
+	}
+	else{
         pendulum.angle_previous[0] = pendulum.angle[0];
         pendulum.angle[0] = (pendulum.angle[0]+Math.PI/180)%(2*Math.PI);
         pendulum.angle_dot[0] = (pendulum.angle[0]-pendulum.angle_previous[0])/dt;
@@ -175,7 +244,7 @@ function animate() {
         pendulum.angle[1] = (pendulum.angle[1]-Math.PI/180)%(2*Math.PI);
         pendulum.angle_dot[1] = (pendulum.angle[1]-pendulum.angle_previous[1])/dt;
         numerical_integrator = "none";
-
+	}
 
     // set the angles of the pendulum
     pendulum.geom.rotation.y = pendulum.angle[0];  // threejs cylinders have their axes along the y-axis
@@ -284,6 +353,42 @@ function pendulum_acceleration(p,g) {
 
     // STENCIL: return acceleration(s) system equation(s) of motion 
 }
+
+
+
+function rk_acceleration(theta,theta_dot) {
+
+    var m1 = pendulum.mass[0];
+    var m2 = pendulum.mass[1];
+    var l1 = pendulum.length[0];
+    var l2 = pendulum.length[1];
+    var x1 = theta[0];
+    var x2 = theta[1];
+    var v1 = theta_dot[0];
+    var v2 = theta_dot[1];
+	var g = gravity;
+	
+    var a1 = 
+        ( -m2 * Math.cos(x1-x2) * l1* v1*v1 * Math.sin(x1-x2)
+        + m2 * Math.cos(x1-x2) * g * Math.sin(x2) 
+        - m2 * l2 * v2*v2 * Math.sin(x1-x2) 
+        - (m1+m2) * g * Math.sin(x1) )
+        / (l1 * (m1+m2) 
+        - m2 * Math.cos(x1-x2) * Math.cos(x1-x2) );
+
+    var a2 = 
+        ( (m1+m2) * 
+          ( l1 * v1*v1 * Math.sin(x1-x2)
+          + ((v2*v2 * Math.sin(x1-x2) * Math.cos(x1-x2) * m2 * l2) / (m1+m2))
+          + Math.cos(x1-x2) * g * Math.sin(x1)
+          - g * Math.sin(x2) ) )
+        / (l2 * (m1 + m2 * Math.sin(x1-x2) * Math.sin(x1-x2)) ); 
+    return [a1,a2];
+}
+
+
+
+
 
 function createScene() {
 
