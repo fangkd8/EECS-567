@@ -78,14 +78,14 @@ function init() {
     gravity = 9.81;  // Earth gravity
 
     // initialize pendulum PID servo gains
-    pendulum.servo = {kp:3, kd:2, ki:0};  // no control
+    pendulum.servo = {kp:0, kd:0, ki:0};  // no control
 
     // initialize time and set timestep 
     t = 0;
     dt = 0.05;  // default
  
-    error = [0,0];
-    error_pre =[0,0];
+    //error = [0,0];
+    //error_pre =[0,0];
     // initialize method of numerical integration of dynamics
     //numerical_integrator = "euler";
     //numerical_integrator = "verlet";
@@ -127,9 +127,9 @@ function animate() {
     if (keyboard.pressed("0"))
         numerical_integrator = "none";
     if (keyboard.pressed("1"))
-        numerical_integrator = "euler";
+        numerical_integrator = "runge-kutta";
     if (keyboard.pressed("2"))
-        numerical_integrator = "verlet";
+        numerical_integrator = "runge-kutta";
     if (keyboard.pressed("3"))
         numerical_integrator = "velocity verlet";
     if (keyboard.pressed("4"))
@@ -153,18 +153,18 @@ function animate() {
     kp = pendulum.servo.kp;
     ki = pendulum.servo.ki;
     kd = pendulum.servo.kd;
-    //error = [0,0];     
+    error = [0,0];     
     error[0] = pendulum.desired[0] - pendulum.angle[0];
     error[1] = pendulum.desired[1] - pendulum.angle[1];
     //accumulated_error = [0,0];
     accumulated_error[0] = error[0] + accumulated_error[0];
     accumulated_error[1] = error[1] + accumulated_error[1];
-    //error_pre = [0,0];      
+    error_pre = [0,0];      
     error_pre[0] = pendulum.desired[0] - pendulum.angle_previous[0];
     error_pre[1] = pendulum.desired[1] - pendulum.angle_previous[1];
     pendulum.control[0] = kp*error[0] + ki*accumulated_error[0] + kd*(error[0]-error_pre[0])/dt;
-    //pendulum.control[1] = kp*error[1] + ki*accumulated_error[1] + kd*(error[1]-error_pre[1])/dt;
-    console.log(accumulated_error[0]);
+    pendulum.control[1] = kp*error[1] + ki*accumulated_error[1] + kd*(error[1]-error_pre[1])/dt;
+    //console.log(pendulum.control[0],pendulum.control[1]);
     // toggle activation of servo controller from user interaction
     if (keyboard.pressed("c"))
         servo_active_persist = !servo_active_persist;
@@ -209,6 +209,8 @@ function animate() {
 		pendulum.angle_dot[1] = pendulum.angle_dot[1] + 0.5*(a1[1] + a2[1])*dt;
 	}
 	else if (numerical_integrator === "runge-kutta"){
+		pendulum.angle_previous[0] = pendulum.angle_previous[0];
+		pendulum.angle_previous[1] = pendulum.angle_previous[1];
 		kx1 = [0,0];
 		kv1 = [0,0];
 		kx2 = [0,0];
@@ -217,7 +219,7 @@ function animate() {
 		kv3 = [0,0];
 		kx4 = [0,0];
 		kv4 = [0,0];
-		
+		//pendulum.angle_previous = pendulum.angle;
 		kx1[0] = pendulum.angle[0];
 		kv1[0] = pendulum.angle_dot[0];
 		kx1[1] = pendulum.angle[1];
