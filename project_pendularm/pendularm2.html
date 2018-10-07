@@ -78,14 +78,14 @@ function init() {
     gravity = 9.81;  // Earth gravity
 
     // initialize pendulum PID servo gains
-    pendulum.servo = {kp:0, kd:0, ki:0};  // no control
+    pendulum.servo = {kp:5, kd:1, ki:0};  // no control
 
     // initialize time and set timestep 
     t = 0;
     dt = 0.05;  // default
  
-    //error = [0,0];
-    //error_pre =[0,0];
+    error = [0,0];
+    error_pre =[0,0];
     // initialize method of numerical integration of dynamics
     //numerical_integrator = "euler";
     //numerical_integrator = "verlet";
@@ -127,9 +127,9 @@ function animate() {
     if (keyboard.pressed("0"))
         numerical_integrator = "none";
     if (keyboard.pressed("1"))
-        numerical_integrator = "runge-kutta";
+        numerical_integrator = "euler";
     if (keyboard.pressed("2"))
-        numerical_integrator = "runge-kutta";
+        numerical_integrator = "verlet";
     if (keyboard.pressed("3"))
         numerical_integrator = "velocity verlet";
     if (keyboard.pressed("4"))
@@ -153,18 +153,18 @@ function animate() {
     kp = pendulum.servo.kp;
     ki = pendulum.servo.ki;
     kd = pendulum.servo.kd;
-    error = [0,0];     
+    //error = [0,0];     
     error[0] = pendulum.desired[0] - pendulum.angle[0];
     error[1] = pendulum.desired[1] - pendulum.angle[1];
     //accumulated_error = [0,0];
     accumulated_error[0] = error[0] + accumulated_error[0];
     accumulated_error[1] = error[1] + accumulated_error[1];
-    error_pre = [0,0];      
+    //error_pre = [0,0];      
     error_pre[0] = pendulum.desired[0] - pendulum.angle_previous[0];
     error_pre[1] = pendulum.desired[1] - pendulum.angle_previous[1];
-    pendulum.control[0] = kp*error[0] + ki*accumulated_error[0] + kd*(error[0]-error_pre[0])/dt;
-    pendulum.control[1] = kp*error[1] + ki*accumulated_error[1] + kd*(error[1]-error_pre[1])/dt;
-    //console.log(pendulum.control[0],pendulum.control[1]);
+    pendulum.control[0] = kp*error[0] + ki*accumulated_error[0]*dt + kd*(error[0]-error_pre[0])/dt;
+    pendulum.control[1] = kp*error[1] + ki*accumulated_error[1]*dt + kd*(error[1]-error_pre[1])/dt;
+    //console.log(accumulated_error[0]);
     // toggle activation of servo controller from user interaction
     if (keyboard.pressed("c"))
         servo_active_persist = !servo_active_persist;
@@ -209,8 +209,6 @@ function animate() {
 		pendulum.angle_dot[1] = pendulum.angle_dot[1] + 0.5*(a1[1] + a2[1])*dt;
 	}
 	else if (numerical_integrator === "runge-kutta"){
-		pendulum.angle_previous[0] = pendulum.angle_previous[0];
-		pendulum.angle_previous[1] = pendulum.angle_previous[1];
 		kx1 = [0,0];
 		kv1 = [0,0];
 		kx2 = [0,0];
@@ -219,41 +217,42 @@ function animate() {
 		kv3 = [0,0];
 		kx4 = [0,0];
 		kv4 = [0,0];
-		//pendulum.angle_previous = pendulum.angle;
+        pendulum.angle_previous[0]=pendulum.angle[0];
+        pendulum.angle_previous[1]=pendulum.angle[1];
 		kx1[0] = pendulum.angle[0];
 		kv1[0] = pendulum.angle_dot[0];
 		kx1[1] = pendulum.angle[1];
 		kv1[1] = pendulum.angle_dot[1];
-		a1 = [0,0];
-		a1 = pendulum_acceleration(pendulum, gravity);
+		at1 = [0,0];
+		at1 = rk_acceleration(kx1, kv1);
 		
 		//a1 = pendulum.doubledot; 
 		kx2[0] = kx1[0] + (0.5*kv1[0]*dt);
-		kv2[0] = kv1[0] + (0.5*a1[0]*dt);
+		kv2[0] = kv1[0] + (0.5*at1[0]*dt);
 		kx2[1] = kx1[1] + (0.5*kv1[1]*dt);
-		kv2[1] = kv1[1] + (0.5*a1[1]*dt);
-		a2 = [0,0];
-		a2 = rk_acceleration(kx2, kv2);
+		kv2[1] = kv1[1] + (0.5*at1[1]*dt);
+		at2 = [0,0];
+		at2 = rk_acceleration(kx2, kv2);
 		
 		//a2 = pendulum.doubledot;
 		kx3[0] = kx1[0] + (0.5*kv2[0]*dt);
-		kv3[0] = kv1[0] + (0.5*a2[0]*dt);
+		kv3[0] = kv1[0] + (0.5*at2[0]*dt);
 		kx3[1] = kx1[1] + (0.5*kv2[1]*dt);
-		kv3[1] = kv1[1] + (0.5*a2[1]*dt);
-		a3 = [0,0];
-		a3 = rk_acceleration(kx3, kv3);
+		kv3[1] = kv1[1] + (0.5*at2[1]*dt);
+		at3 = [0,0];
+		at3 = rk_acceleration(kx3, kv3);
 		
 		//a3 = pendulum.doubledot;
 		kx4[0] = kx1[0] + (kv3[0]*dt);
-		kv4[0] = kv1[0] + (a3[0]*dt);
+		kv4[0] = kv1[0] + (at3[0]*dt);
 		kx4[1] = kx1[1] + (kv3[1]*dt);
-		kv4[1] = kv1[1] + (a3[1]*dt);
-		a4 = [0,0];
-		a4 = rk_acceleration(kx4, kv4);
+		kv4[1] = kv1[1] + (at3[1]*dt);
+		at4 = [0,0];
+		at4 = rk_acceleration(kx4, kv4);
 		pendulum.angle[0] = pendulum.angle[0] + dt*(1/6*kv1[0] + 1/3*kv2[0] + 1/3*kv3[0] + 1/6*kv4[0]);
 		pendulum.angle[1] = pendulum.angle[1] + dt*(1/6*kv1[1] + 1/3*kv2[1] + 1/3*kv3[1] + 1/6*kv4[1]);
-		pendulum.angle_dot[0] = pendulum.angle_dot[0] + dt*(1/6*a1[0] + 1/3*a2[0] + 1/3*a3[0] + 1/6*a4[0]);
-		pendulum.angle_dot[1] = pendulum.angle_dot[1] + dt*(1/6*a1[1] + 1/3*a2[1] + 1/3*a3[1] + 1/6*a4[1]);
+		pendulum.angle_dot[0] = pendulum.angle_dot[0] + dt*(1/6*at1[0] + 1/3*at2[0] + 1/3*at3[0] + 1/6*at4[0]);
+		pendulum.angle_dot[1] = pendulum.angle_dot[1] + dt*(1/6*at1[1] + 1/3*at2[1] + 1/3*at3[1] + 1/6*at4[1]);
 	}
 	else{
         pendulum.angle_previous[0] = pendulum.angle[0];
@@ -333,13 +332,13 @@ function pendulum_acceleration(p,g) {
     var la2 = p.control[1];
 
     var a1 = 
-        (la1 -m2 * Math.cos(x1-x2) * l1* v1*v1 * Math.sin(x1-x2)
+        ((la1/l1) -m2 * Math.cos(x1-x2) * l1* v1*v1 * Math.sin(x1-x2)
         + m2 * Math.cos(x1-x2) * g * Math.sin(x2) 
-        - m2 * Math.cos(x1-x2) * la2
+        -  Math.cos(x1-x2) * (la2/l2)
         - m2 * l2 * v2*v2 * Math.sin(x1-x2) 
         - (m1+m2) * g * Math.sin(x1) )
         / (l1 * (m1+m2) 
-        - m2 * Math.cos(x1-x2) * Math.cos(x1-x2) );
+        - m2 *l1 * Math.cos(x1-x2) * Math.cos(x1-x2) );
 /*
     var a1 = 
         ( -m2 * Math.cos(x1-x2) * l1* v1*v1 * Math.sin(x1-x2)
@@ -350,11 +349,12 @@ function pendulum_acceleration(p,g) {
         - m2 * Math.cos(x1-x2) * Math.cos(x1-x2) );
  */   
     var a2 = 
-        ( (m1+m2) * 
-          ( la2 + l1 * v1*v1 * Math.sin(x1-x2)
-          + (((v2*v2 * Math.sin(x1-x2) * Math.cos(x1-x2) * m2 * l2)-(la1*Math.cos(x1-x2))) / (m1+m2))
-          + Math.cos(x1-x2) * g * Math.sin(x1)
-          - g * Math.sin(x2) ) )
+        ( (m1+m2)*l1*v1*v1*Math.sin(x1-x2)-
+          (m1+m2)*g*Math.sin(x2)+
+           m2*l2*v2*v2*Math.sin(x1-x2)*Math.cos(x1-x2)+
+           (m1+m2)*g*Math.sin(x1)*Math.cos(x1-x2)+
+           (m1+m2)*la2/(m2*l2)-
+           la1*Math.cos(x1-x2)/l1 )
         / (l2 * (m1 + m2 * Math.sin(x1-x2) * Math.sin(x1-x2)) ); 
 /*
     var a2 = 
@@ -385,21 +385,22 @@ function rk_acceleration(theta,theta_dot) {
     var la2 = pendulum.control[1];
 	
     var a1 = 
-        (la1 -m2 * Math.cos(x1-x2) * l1* v1*v1 * Math.sin(x1-x2)
+        ((la1/l1) -m2 * Math.cos(x1-x2) * l1* v1*v1 * Math.sin(x1-x2)
         + m2 * Math.cos(x1-x2) * g * Math.sin(x2) 
-        - m2 * Math.cos(x1-x2) *la2
+        -  Math.cos(x1-x2) * (la2/l2)
         - m2 * l2 * v2*v2 * Math.sin(x1-x2) 
         - (m1+m2) * g * Math.sin(x1) )
         / (l1 * (m1+m2) 
-        - m2 * Math.cos(x1-x2) * Math.cos(x1-x2) );
+        - m2 *l1 * Math.cos(x1-x2) * Math.cos(x1-x2) );
 
     var a2 = 
-        ( (m1+m2) * 
-          ( la2 + l1 * v1*v1 * Math.sin(x1-x2)
-          + (((v2*v2 * Math.sin(x1-x2) * Math.cos(x1-x2) * m2 * l2)-(la1*Math.cos(x1-x2))) / (m1+m2))
-          + Math.cos(x1-x2) * g * Math.sin(x1)
-          - g * Math.sin(x2) ) )
-        / (l2 * (m1 + m2 * Math.sin(x1-x2) * Math.sin(x1-x2)) ); 
+        ( (m1+m2)*l1*v1*v1*Math.sin(x1-x2)-
+          (m1+m2)*g*Math.sin(x2)+
+           m2*l2*v2*v2*Math.sin(x1-x2)*Math.cos(x1-x2)+
+           (m1+m2)*g*Math.sin(x1)*Math.cos(x1-x2)+
+           (m1+m2)*la2/(m2*l2)-
+           la1*Math.cos(x1-x2)/l1 )
+        / (l2 * (m1 + m2 * Math.sin(x1-x2) * Math.sin(x1-x2)) );  
     return [a1,a2];
 }
 
