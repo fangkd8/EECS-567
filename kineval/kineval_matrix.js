@@ -143,7 +143,7 @@ function vector_normalize(a){
 	}
 	return a1;
 }
-function generate_identity{
+function generate_identity(){
 	var mat=[];
 	mat=[
 	[1,0,0,0],

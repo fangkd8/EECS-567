@@ -27,6 +27,7 @@ kineval.initRobotLinks = function initRobotLinks() {
 
     for (x in robot.links) {
         robot.links[x].name = x;
+        robot.links[x].child = [];
     }
 
     // initialize controls for robot base link
@@ -54,7 +55,15 @@ kineval.initRobotJoints = function initRobotJoints() {
         robot.joints[x].servo.p_gain = 0; 
         robot.joints[x].servo.p_desired = 0;
         robot.joints[x].servo.d_gain = 0; 
-
+        for (tempmat in robot.links) {
+        	if (robot.joints[x].child == robot.links[tempmat].name) {
+        		robot.links[tempmat].parent = robot.joints[x].name;
+        	}
+        	else if(robot.joints[x].parent == robot.links[tempmat].name) {
+        		robot.links[tempmat].child.unshift(robot.joints[x].name);
+        		console.log(tempmat,robot.links[tempmat].child);
+        	}
+        }
     // STENCIL: complete kinematic hierarchy of robot for convenience.
     //   robot description only specifies parent and child links for joints.
     //   additionally specify parent and child joints for each link
