@@ -71,29 +71,33 @@ function startingPlaceholderAnimate() {
     // in this example, each link of robot will be spaced evenly apart, centered along the x-axis and floating along y-axis using a translation matrix.  additional translational offsets will be controlled interactive through key controls
 
     // HANDLE USER KEY INTERACTION
-
+	
     // keyboard is threejs helper for reading keyboard state
     if (keyboard.pressed("x")) {
         textbar.innerHTML = "moving on up";  // make the pieces move up
+		vert_offset+=0.01;
     // STENCIL: update the vertical offset variable
     }
     else if (keyboard.pressed("z")) {
         textbar.innerHTML = "relax your mind, let your conscience be free";  // stop jittering the pieces
-    // STENCIL: update the radius of the jittering
+		jitter_radius=0.00;
+	// STENCIL: update the radius of the jittering
     }
     else if (keyboard.pressed("shift+1")) { 
         textbar.innerHTML = "get a move on";  // increase spacing
+		global_spacing+=0.01;
     // STENCIL: update the global spacing variable
     }
     else if (keyboard.pressed("1")) {
         textbar.innerHTML = "come together";  // decrease spacing
+		global_spacing-=0.01;
     // STENCIL: update the global spacing variable
     }
     else {
         // make the pieces jitter, and say something more interesting
-        textbar.innerHTML = "Welcome to KinEval. I want to see some text. Can you place a message here?";  // set message text
-        vert_offset = 1;
-        jitter_radius = 0.2;
+        textbar.innerHTML = "Welcome to KinEval Fang, do something. ";  // set message text
+        //vert_offset = 0.5;
+        jitter_radius = 0.08;
     }
 
     // CREATE TRANSFORMATION MATRIX
