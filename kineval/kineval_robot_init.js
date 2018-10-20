@@ -24,7 +24,7 @@ kineval.initRobot = function initRobot() {
 }
 
 kineval.initRobotLinks = function initRobotLinks() {
-
+	//robotlinks = newArray();
     for (x in robot.links) {
         robot.links[x].name = x;
         robot.links[x].child = [];
@@ -61,7 +61,7 @@ kineval.initRobotJoints = function initRobotJoints() {
         	}
         	else if(robot.joints[x].parent == robot.links[tempmat].name) {
         		robot.links[tempmat].child.unshift(robot.joints[x].name);
-        		console.log(tempmat,robot.links[tempmat].child);
+        		//console.log(tempmat,robot.links[tempmat].child);
         	}
         }
     // STENCIL: complete kinematic hierarchy of robot for convenience.

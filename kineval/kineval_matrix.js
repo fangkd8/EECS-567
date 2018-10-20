@@ -165,7 +165,7 @@ function generate_translation_matrix(a){
 	mat[2][3] = a[2];
 	return mat;
 }
-function generate_rotation_matrix_X(theta){
+function generate_rotation_matrix_Y(theta){
 	var cos,sin;
 	cos = Math.cos(theta);
 	sin = Math.sin(theta);
@@ -178,7 +178,7 @@ function generate_rotation_matrix_X(theta){
 	];
 	return mat;
 }
-function generate_rotation_matrix_Y(theta){
+function generate_rotation_matrix_Z(theta){
 	var cos,sin;
 	cos = Math.cos(theta);
 	sin = Math.sin(theta);
@@ -191,7 +191,7 @@ function generate_rotation_matrix_Y(theta){
 	];
 	return mat;
 }
-function generate_rotation_matrix_Z(theta){
+function generate_rotation_matrix_X(theta){
 	var cos,sin;
 	cos = Math.cos(theta);
 	sin = Math.sin(theta);

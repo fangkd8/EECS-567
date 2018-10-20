@@ -84,8 +84,8 @@
 // set KinEval user parameter defaults
 var url_params = {
     // load robot data object from given source file name
-    robot:"robots/robot_crawler.js",
-    //robot:"robots/robot_mr2.js",
+    //robot:"robots/robot_crawler.js",
+    robot:"robots/robot_mr2.js",
     //robot:"robots/robot_urdf_example.js",
     // load world data object from given source file name
     world:"worlds/world_basic.js",
@@ -128,7 +128,7 @@ window.onload = kineval.start;
 function my_init() {
 
     startingPlaceholderInit();  // a quick and dirty JavaScript tutorial
-    console.log(robot.joints, robot.links);
+    //console.log(robot.joints, robot.links);
 }
 
 //////////////////////////////////////////////////
