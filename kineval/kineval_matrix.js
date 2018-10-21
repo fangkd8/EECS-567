@@ -143,15 +143,24 @@ function vector_normalize(a){
 	}
 	return a1;
 }
-function generate_identity(){
-	var mat=[];
+function generate_identity(a,r1,r2,r3,off){
+/*	var mat=[];
 	mat=[
 	[1,0,0,0],
 	[0,1,0,0],
 	[0,0,1,0],
 	[0,0,0,1]
 	];
-	return mat;
+	return mat;*/
+	m1 = generate_rotation_matrix_X(r1);
+    m2 = generate_rotation_matrix_Y(r2);
+    m3 = generate_rotation_matrix_Z(r3);
+    n = generate_translation_matrix(a);
+    mat = matrix_multiply(m1,off);
+    mat = matrix_multiply(m2,mat);
+    mat = matrix_multiply(m3,mat);
+    mat = matrix_multiply(n,mat);
+    return mat;
 }
 function generate_translation_matrix(a){
 	var mat=[];

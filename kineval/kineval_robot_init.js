@@ -27,7 +27,7 @@ kineval.initRobotLinks = function initRobotLinks() {
 	//robotlinks = newArray();
     for (x in robot.links) {
         robot.links[x].name = x;
-        robot.links[x].child = [];
+        robot.links[x].children = [];
     }
 
     // initialize controls for robot base link
@@ -60,7 +60,7 @@ kineval.initRobotJoints = function initRobotJoints() {
         		robot.links[tempmat].parent = robot.joints[x].name;
         	}
         	else if(robot.joints[x].parent == robot.links[tempmat].name) {
-        		robot.links[tempmat].child.unshift(robot.joints[x].name);
+        		robot.links[tempmat].children.unshift(robot.joints[x].name);
         		//console.log(tempmat,robot.links[tempmat].child);
         	}
         }

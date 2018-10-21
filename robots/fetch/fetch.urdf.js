@@ -12,84 +12,173 @@
 
 
 robot = {
-    name:"fetch", 
-    base:"base_link", 
-    origin:{xyz: [0,0.1,0], rpy:[0,0,0]},
-    links: {
-        "base_link": {},
-        "torso_lift_link": {},
-        "head_pan_link": {},
-        "head_tilt_link": {},
-        "shoulder_pan_link": {},
-        "shoulder_lift_link": {},
-        "upperarm_roll_link": {},
-        "elbow_flex_link": {},
-        "forearm_roll_link": {},
-        "wrist_flex_link": {},
-        "wrist_roll_link": {},
-        "gripper_link": {},
-        "torso_fixed_link": {},
+  name:"fetch", 
+  base:"base_link", 
+  origin:{ xyz: [0,0.1,0], rpy:[0,0,0] },
+  links: {
+    "base_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "base_link_adjusted.dae" } }
+      }
     },
+    "r_wheel_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "r_wheel_link.STL" } },
+        material : { color : { rgba : [0.086, 0.506, 0.767, 1] } }
+      }
+    },
+    "l_wheel_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "l_wheel_link.STL" } },
+        material : { color : { rgba : [0.086, 0.506, 0.767, 1] } }
+      }
+    },
+    "torso_lift_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "torso_lift_link_adjusted.dae" } }
+      }
+    },
+    "head_pan_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "head_pan_link_adjusted.dae" } }
+      }
+    },
+    "head_tilt_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "head_tilt_link_adjusted.dae" } }
+      }
+    },
+    "shoulder_pan_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "shoulder_pan_link_adjusted.dae" } }
+      }
+    },
+    "shoulder_lift_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "shoulder_lift_link_adjusted.dae" } }
+      }
+    },
+    "upperarm_roll_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "upperarm_roll_link_adjusted.dae" } }
+      }
+    },
+    "elbow_flex_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "elbow_flex_link_adjusted.dae" } }
+      }
+    },
+    "forearm_roll_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "forearm_roll_link_adjusted.dae" } }
+      }
+    },
+    "wrist_flex_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "wrist_flex_link_adjusted.dae" } }
+      }
+    },
+    "wrist_roll_link": {
+      visual : { 
+        origin: { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "wrist_roll_link_adjusted.dae" } }
+      }
+    },
+    "gripper_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "gripper_link_adjusted.dae" } }
+      }
+    },
+    "r_gripper_finger_link": {
+      visual : { 
+        origin : { xyz: [0,0.101425,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "r_gripper_finger_link.STL" } },
+        material : { color : { rgba : [0.356, 0.361, 0.376, 1] } }
+      }
+    },
+    "l_gripper_finger_link": {
+      visual : { 
+        origin : { xyz: [0,-0.101425,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "l_gripper_finger_link.STL" } },
+        material : { color : { rgba : [0.356, 0.361, 0.376, 1] } }
+      }
+    },
+    "bellows_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "bellows_link.STL" } },
+        material : { color : { rgba : [0, 0, 0, 1] } }
+      }
+    },
+    "bellows_link2": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "bellows_link.STL" } },
+        material : { color : { rgba : [0, 0, 0, 1] } }
+      }
+    },
+    "estop_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "estop_link.STL" } },
+        material : { color : { rgba : [0.8, 0, 0, 1] } }
+      }
+    },
+    "laser_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "laser_link.STL" } },
+        material : { color : {
+            rgba : [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
+          }
+        }
+      }
+    },
+    "torso_fixed_link": {
+      visual : { 
+        origin : { xyz: [0,0,0], rpy:[0,0,0] },
+        geometry : { mesh : { filename : "torso_fixed_link_adjusted.dae" } }
+      }
+    },
+  },
 };
 
 // specify name of endeffector frame
 robot.endeffector = {};
 robot.endeffector.frame = "gripper_axis";
-robot.endeffector.position = [[0.1],[0],[0],[1]]
-
-/*
-    links = {
-        "base_link": {},
-        // "r_wheel_link": {},
-        // "l_wheel_link": {},
-        "torso_lift_link": {},
-        "head_pan_link": {},
-        "head_tilt_link": {},
-        "shoulder_pan_link": {},
-        "shoulder_lift_link": {},
-        "upperarm_roll_link": {},
-        "elbow_flex_link": {},
-        "forearm_roll_link": {},
-        "wrist_flex_link": {},
-        "wrist_roll_link": {},
-        "gripper_link": {},
-        //"r_gripper_finger_link": {},
-        //"l_gripper_finger_link": {},
-        //"bellows_link": {},
-        //"bellows_link2": {},
-        //"estop_link": {},
-        //"laser_link": {},
-        "torso_fixed_link": {},
-        //"head_camera_link": {},
-        //"head_camera_rgb_frame": {},
-        //"head_camera_rgb_optical_frame": {},
-        //"head_camera_depth_frame": {},
-        //"head_camera_depth_optical_frame": {}
-    }
-*/
+robot.endeffector.position = [ [0.1],[0],[0],[1] ]
 
 robot.joints = {};
-
-/*
-robot.joints.r_wheel_joint = {parent:"base_link", child:"r_wheel_link"};
-robot.joints.r_wheel_joint.axis = [0,1,0];
-robot.joints.l_wheel_joint.type = "continuous";
-robot.joints.r_wheel_joint.origin = {xyz: [0.0012914,-0.18738,0.055325], rpy:[-6.123E-17,0,0]};
-*/
-
-
-/*
-robot.joints.l_wheel_joint = {parent:"base_link", child:"l_wheel_link"};
-robot.joints.l_wheel_joint.axis = [0,1,0];
-robot.joints.l_wheel_joint.type = "continuous";
-robot.joints.l_wheel_joint.origin = {xyz: [0.0012914,0.18738,0.055325], rpy:[-6.123E-17,0,0]};
-*/
 
 robot.joints.torso_lift_joint = {parent:"base_link", child:"torso_lift_link"};
 robot.joints.torso_lift_joint.axis = [0,0,1];
 robot.joints.torso_lift_joint.type = "prismatic";
 robot.joints.torso_lift_joint.origin = {xyz: [-0.086875,0,0.37743], rpy:[-6.123E-17,0,0]};
 robot.joints.torso_lift_joint.limit = {lower:0, upper:0.4};
+
+robot.joints.r_wheel_joint = {parent:"base_link", child:"r_wheel_link"};
+robot.joints.r_wheel_joint.axis = [0,1,0];
+robot.joints.r_wheel_joint.type = "continuous";
+robot.joints.r_wheel_joint.origin = {xyz: [0.0012914,-0.18738,0.055325], rpy:[-6.123E-17,0,0]};
+
+robot.joints.l_wheel_joint = {parent:"base_link", child:"l_wheel_link"};
+robot.joints.l_wheel_joint.axis = [0,1,0];
+robot.joints.l_wheel_joint.type = "continuous";
+robot.joints.l_wheel_joint.origin = {xyz: [0.0012914,0.18738,0.055325], rpy:[-6.123E-17,0,0]};
+
 
 robot.joints.shoulder_pan_joint = {parent:"torso_lift_link", child:"shoulder_pan_link"};
 robot.joints.shoulder_pan_joint.axis = [0,0,1];
@@ -148,9 +237,6 @@ robot.joints.head_tilt_joint.type = "revolute";
 robot.joints.head_tilt_joint.origin = {xyz: [0.14253,0,0.057999], rpy:[0,0,0]};
 robot.joints.head_tilt_joint.limit = {lower:-0.76, upper:1.45};
 
-
-// KE 2: add gripper finger joints and bellows joint
-/*
 robot.joints.r_gripper_finger_joint = {parent:"gripper_link", child:"r_gripper_finger_link"};
 robot.joints.r_gripper_finger_joint.axis = [0,1,0];
 robot.joints.r_gripper_finger_joint.type = "prismatic";
@@ -170,11 +256,11 @@ robot.joints.bellows_joint.origin = {xyz: [0,0,0], rpy:[0,0,0]};
 robot.joints.bellows_joint.limit = {lower:0.0, upper:0.4};
 
 robot.joints.bellows_joint2 = {parent:"torso_lift_link", child:"bellows_link2"};
-robot.joints.bellows_joint2.axis = [0,0,1];  // fetch.urdf has not axis
+robot.joints.bellows_joint2.axis = [0,0,1]; 
 robot.joints.bellows_joint2.type = "fixed";
 robot.joints.bellows_joint2.origin = {xyz: [0,0,0], rpy:[0,0,0]};
 
-robot.joints.estop_joint = {parent:"", child:""};
+robot.joints.estop_joint = {parent:"base_link", child:"estop_link"};
 robot.joints.estop_joint.axis = [0,0,0]; // is fetch.urdf zero axis correct?
 robot.joints.estop_joint.type = "fixed";
 robot.joints.estop_joint.origin = {xyz: [-0.12465,0.23892,0.31127], rpy:[1.5708,0,0]};
@@ -183,7 +269,6 @@ robot.joints.laser_joint = {parent:"base_link", child:"laser_link"};
 robot.joints.laser_joint.axis = [0,0,0];
 robot.joints.laser_joint.type = "fixed";
 robot.joints.laser_joint.origin = {xyz: [0.235,0,0.2878], rpy:[3.14159265359,0,0]};
-*/
 
 robot.joints.torso_fixed_joint = {parent:"base_link", child:"torso_fixed_link"};
 robot.joints.torso_fixed_joint.axis = [0,1,0];
@@ -191,32 +276,6 @@ robot.joints.torso_fixed_joint.type = "fixed";
 robot.joints.torso_fixed_joint.origin = {xyz: [-0.086875,0,0.377425], rpy:[-6.12303176911189E-17,0,0]};
 
 /*
-robot.joints.head_camera_joint = {parent:"head_tilt_link", child:"head_camera_link"};
-robot.joints.head_camera_joint.axis = [0,1,0];
-robot.joints.head_camera_joint.type = "fixed";
-robot.joints.head_camera_joint.origin = {xyz: [0.055,0,0.0225], rpy:[0,0,0]};
-
-robot.joints.head_camera_rgb_joint = {parent:"head_camera_link", child:"head_camera_rgb_frame"};
-robot.joints.head_camera_rgb_joint.axis = [0,0,0]; // urdf has no axis
-robot.joints.head_camera_rgb_joint.type = "fixed";
-robot.joints.head_camera_rgb_joint.origin = {xyz: [0,0.02,0], rpy:[0,0,0]};
-
-robot.joints.head_camera_rgb_optical_joint = {parent:"head_camera_rgb_frame", child:"head_camera_rgb_optical_frame"};
-robot.joints.head_camera_rgb_optical_joint.axis = [0,1,0]; // urdf has no axis
-robot.joints.head_camera_rgb_optical_joint.type = "fixed";
-robot.joints.head_camera_rgb_optical_joint.origin = {xyz: [0,0,0], rpy:[-1.57079632679,0,-1.57079632679]};
-
-robot.joints.head_camera_depth_joint = {parent:"head_camera_link", child:"head_camera_depth_frame"};
-robot.joints.head_camera_depth_joint.axis = [0,0,0]; // urdf has no axis
-robot.joints.head_camera_depth_joint.type = "fixed";
-robot.joints.head_camera_depth_joint.origin = {xyz: [0,0.045,0], rpy:[0,0,0]};
-
-robot.joints.head_camera_depth_optical_joint = {parent:"head_camera_depth_frame", child:"head_camera_depth_optical_frame"};
-robot.joints.head_camera_rgb_optical_joint.axis = [0,1,0]; // urdf has no axis
-robot.joints.head_camera_rgb_optical_joint.type = "fixed";
-robot.joints.head_camera_rgb_optical_joint.origin = {xyz: [0,0,0], rpy:[-1.57079632679,0,-1.57079632679]};
-*/
-
 // filenames for link collada models
 // delme for ColladaLoader 1        'base_link_delme.dae',
 // without delme for ColladaLoader 2       'base_link.dae',
@@ -235,6 +294,7 @@ robot.joints.head_camera_rgb_optical_joint.origin = {xyz: [0,0,0], rpy:[-1.57079
         'wrist_flex_link_adjusted.dae',
         'wrist_roll_link_adjusted.dae'
      ];
+*/
 
 
 // note ROS coordinate system (x:forward, y:lateral, z:up) is different than threejs (x:lateral, y:up, z:forward)
@@ -242,18 +302,35 @@ robot.links_geom_imported = true;
 
 links_geom = {};
 
-for (i=0;i<fetch_dae_files.length;i++) {
-    geom_index = fetch_dae_files[i].split('_adjusted');
+  // KE: replace hardcoded robot directory
+  // KE: replace file extension processing
+progressLinkLoading = 0;
+i = 0;
+imax = Object.keys(robot.links).length;
+for (x in robot.links) {
+  //geom_index = robot.links[x].visual.geometry.mesh.filename.split('_adjusted')[0];
+  //geom_extension = robot.links[x].visual.geometry.mesh.filename.split('_adjusted')[1];
+  filename_split = robot.links[x].visual.geometry.mesh.filename.split('.');
+  geom_index = filename_split[0];
+  geom_extension = filename_split[filename_split.length-1];
+  console.log(geom_index + "  " + geom_extension);
+  //assignFetchModel('./robots/fetch/'+robot.links[x].visual.geometry.mesh.filename,geom_index);
+  if (geom_extension === "dae") { // KE: extend to use regex
+    assignFetchModelCollada('./robots/fetch/'+robot.links[x].visual.geometry.mesh.filename,x);
+  }
+  else if (geom_extension === "DAE") { // extend to use regex
+    assignFetchModelCollada('./robots/fetch/'+robot.links[x].visual.geometry.mesh.filename,x);
+  }
+  else {
+    assignFetchModelSTL('./robots/fetch/'+robot.links[x].visual.geometry.mesh.filename,robot.links[x].visual.material,x);
+  }
+  i++;
 
-    // KE 1 : parse geometry directory from url
-    assignFetchModel('./robots/fetch/'+fetch_dae_files[i],geom_index[0]);
-    //assignFetchModel('./temp_fetch/'+fetch_dae_files[i],geom_index[0]);
-    //assignFetchModel('./temp_fetch/'+fetch_dae_files[i],i);
-    //console.log('assign '+'./temp_fetch/'+fetch_dae_files[i]);
+  progressLinkLoading = i/imax; 
+  console.log("Robot geometry: progressLinkLoading " + progressLinkLoading*100);
 }
 
-
-function assignFetchModel(filename,index) {
+function assignFetchModelCollada(filename,index) {
 
     console.log("assignFetchModel : "+filename+" - "+index); 
     var collada_loader = new THREE.ColladaLoader();
@@ -267,7 +344,36 @@ function assignFetchModel(filename,index) {
     );
 }
 
+function assignFetchModelCollada2(filename,index) {
+
+    console.log("assignFetchModel : "+filename+" - "+index); 
+    var collada_loader = new ColladaLoader2();
+    var val = collada_loader.load(filename, 
+       function ( collada ) {
+            links_geom[index] = collada.scene;
+        },
+        function (xhr) {
+            console.log(filename+" - "+index+": "+(xhr.loaded / xhr.total * 100) + '% loaded' );
+        }
+    );
+}
 
 
+function assignFetchModelSTL(filename,material_urdf,linkname) {
+
+    console.log("assignFetchModel : "+filename+" - "+linkname); 
+    var stl_loader = new THREE.STLLoader();
+    var val = stl_loader.load(filename, 
+       function ( geometry ) {
+            // ocj: add transparency
+            var material_color = new THREE.Color(material_urdf.color.rgba[0], material_urdf.color.rgba[1], material_urdf.color.rgba[2]);
+            var material = new THREE.MeshLambertMaterial( {color: material_color, side: THREE.DoubleSide} );
+            links_geom[linkname] = new THREE.Mesh( geometry, material ) ;
+        } //,
+        //function (xhr) {
+        //    console.log(filename+" - "+linkname+": "+(xhr.loaded / xhr.total * 100) + '% loaded' );
+        //}
+    );
+}
 
 
