@@ -29,6 +29,9 @@
    - Distance computation needs to consider modulo for joint angles
    - robot_path[] should be used as desireds for controls
    - Add visualization of configuration for current sample
+   - Add cubic spline interpolation
+   - Add hook for random configuration
+   - Display planning iteration number in UI
 */
 
 /*

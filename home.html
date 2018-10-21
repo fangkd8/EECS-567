@@ -1,20 +1,26 @@
-
-<!-- |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/|
+<!--|\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/|
+|\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/|
+||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/
+/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\
 
     KinEval | Kinematic Evaluator | HTML example
 
     Implementation of robot kinematics, control, decision making, and dynamics 
         in HTML5/JavaScript and threejs
      
-    @author ohseejay / https://github.com/ohseejay / https://bitbucket.org/ohseejay
+    @author ohseejay / https://github.com/ohseejay
+                     / https://bitbucket.org/ohseejay
 
     Chad Jenkins
     Laboratory for Perception RObotics and Grounded REasoning Systems
     University of Michigan
 
-    License: Creative Commons 3.0 BY-SA
+    License: Michigan Honor License 
 
-|\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| -->
+|\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/|
+||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/
+/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\
+\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\/||\-->
 
 <html>
 
@@ -28,8 +34,9 @@
 
 <!-- threejs r73 (https://github.com/mrdoob/three.js/) for 3D rendering 
 <script src="js/three.js"></script>
--->
 <script src="js/three_73.min.js"></script>
+-->
+<script src="js/three_92.min.js"></script>
 
 <!-- threejs camera controls helpers -->
 <script src="js/OrbitControls.js"></script>
@@ -38,8 +45,13 @@
 <script src="js/THREEx.KeyboardState.js"></script>
 
 <!-- threejs geometry loading helpers -->
+<script src="js/STLLoader_92.js"></script>
+<script src="js/ColladaLoader_92.js"></script>
+<!--
 <script src="js/STLLoader.js"></script>
+<script src="js/ColladaLoader2.js"></script>
 <script src="js/ColladaLoader.js"></script>
+-->
 
 <!-- numericjs (https://github.com/sloisel/numeric) for matrix routines -->
 <script src="js/numeric-1.2.6.js"></script>
@@ -53,27 +65,33 @@
 <script src="kineval/kineval_robot_init.js"></script>
 <script src="kineval/kineval_threejs.js"></script> 
 <script src="kineval/kineval_userinput.js"></script> 
+
 <!-- kineval FK/drawing -->
-<!--
-<script src="kineval/temp.js"></script> 
--->
 <script src="kineval/kineval_forward_kinematics.js"></script> 
 <script src="kineval/kineval_matrix.js"></script> 
 <script src="kineval/kineval_quaternion.js"></script> 
+
 <!-- kineval FK/joint control -->
 <script src="kineval/kineval_controls.js"></script> 
 <script src="kineval/kineval_servo_control.js"></script> 
+
 <!-- kineval IK -->
 <script src="kineval/kineval_inverse_kinematics.js"></script> 
+
 <!-- kineval motion planning -->
 <script src="kineval/kineval_rrt_connect.js"></script> 
 <script src="kineval/kineval_collision.js"></script> 
-<!-- kineval experimental rosbridge/ROS support -->
 
-<!-- rosbridge support -->
+<!-- kineval experimental rosbridge/ROS for connectivity to a real robot -->
 <script type="text/javascript" src="js/eventemitter2.min.js"></script>
 <script type="text/javascript" src="js/roslib.min.js"></script>
 <script src="kineval/kineval_rosbridge.js"></script> 
+
+<!-- KE: not supported point cloud as JSON version of PCD format -->
+<!--
+<script src="experimental/point_clouds/three_objects.pcd.js"></script> 
+<script src="experimental/point_clouds/eight_objects.pcd.js"></script> 
+-->
 
 <script>
 
@@ -84,29 +102,20 @@
 // set KinEval user parameter defaults
 var url_params = {
     // load robot data object from given source file name
-    //robot:"robots/robot_crawler.js",
     robot:"robots/robot_mr2.js",
-    //robot:"robots/robot_urdf_example.js",
     // load world data object from given source file name
-    world:"worlds/world_basic.js",
+    world:"worlds/world_local_minima.js",
     // specify floor/map image from given image file name
     map_filename: "maps/Cam_Prep-VFX-checkerboard-lens_distortion-1in.jpg"
 };
 
-// preload default robot and world
-// KE 2: suboptimal
-//kineval.loadJSFile("robots/baxter/baxter.urdf.js","robot");
-kineval.loadJSFile("robots/fetch/fetch.urdf.js","robot");
-//kineval.loadJSFile("robots/sawyer/sawyer.urdf.js","robot");
-//kineval.loadJSFile("robots/robot_crawler.js","robot");
-//kineval.loadJSFile("robots/robot_mr2.js","rfetch.urdfobot");
-//kineval.loadJSFile("robots/robot_urdf_example.js","robot");
-kineval.loadJSFile("worlds/world_empty.js","world");
+// preload default robot and world 
+kineval.loadJSFile("robots/robot_mr2.js","robot");
+kineval.loadJSFile("worlds/world_local_minima.js","world");
+//kineval.loadJSFile("worlds/world_empty.js","world");
 
-// extract KinEval user parameters and set defaults
-// parse KinEval parameters from document URL
+// parse KinEval parameters from document URL and set defaults
 var url_parsed = window.location.href.split("?");
-// file:///Users/logan/git_tmp/kineval/home.html?robot=robots/robot_mr2.js?world=worlds/world_s.js
 var i;
 for (i=1;i<url_parsed.length;i++) {
     var param_parsed = url_parsed[i].split("=");
@@ -117,28 +126,27 @@ for (i=1;i<url_parsed.length;i++) {
         kineval.params.map_filename = param_parsed[1];
 }
 
-//kineval.loadJSFile("robots/robot_mr2.js","robot");
-//kineval.loadJSFile("worlds/world_local_minima.js","world");
 
 //////////////////////////////////////////////////
 /////     MAIN FUNCTION CALLS
 //////////////////////////////////////////////////
 
 // start KinEval execution once the page and its resources are loaded
-window.onload = kineval.start;
+//window.onload = kineval.start;
+document.body.onload = kineval.start;
 
-// STENCIL: my_animate is where your robot's controls and movement are updated over time
+// STUDENT: my_animate is where your robot's controls and movement are updated over time
 function my_init() {
 
-    kineval.startingPlaceholderInit();  // a quick and dirty JavaScript tutorial
-    //console.log(robot.joints, robot.links);
+    kineval.startingPlaceholderInit(); // a quick and dirty JavaScript tutorial
+
 }
 
 //////////////////////////////////////////////////
 /////     ANIMATION AND INTERACTION LOOP
 //////////////////////////////////////////////////
 
-// STENCIL: my_animate is where your robot's controls and movement are updated over time
+// STUDENT: my_animate is where your robot's controls and movement are updated over time
 function my_animate() {
 
     // set to starting point mode is true as default (initialized in kineval.js)
@@ -155,7 +163,7 @@ function my_animate() {
 
     // update robot configuration from applied robot controls 
     //   (assuming pure kinematics for now)
-    kineval.applyControls();
+    kineval.applyControls(robot);
 
     // HANDLE USER CONTROLS
 
@@ -188,4 +196,5 @@ function my_animate() {
 </script>
 </body>
 </html>
+
 
