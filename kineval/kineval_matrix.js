@@ -45,7 +45,7 @@ function matrix_transpose(m1) {
 	return mat;	
 }
 
-function matrix_invert_affine(M){
+function matrix_inverse(M){
     var i, j, k, dim, temp;
 	dim = M.length;
     var m1 = [], m2 = [];
@@ -104,6 +104,12 @@ function matrix_invert_affine(M){
     return m1;
 }
 
+function matrix_invert_affine(m1){
+    var mat = [];
+    var i,j;
+    return mat;
+}
+
 function matrix_pseudoinverse(A){
 	var mat=[],trans=[];
 	var N,M;
@@ -112,12 +118,12 @@ function matrix_pseudoinverse(A){
 	trans = matrix_transpose(A);
 	if (N > M){
 		mat = matrix_multiply(trans,A);
-		mat = matrix_invert_affine(mat);
+		mat = matrix_inverse(mat);
 		mat = matrix_multiply(mat,trans);
 	}
 	else if(N < M){
 		mat = matrix_multiply(A,trans);
-		mat = matrix_invert_affine(mat);
+		mat = matrix_inverse(mat);
 		mat = matrix_multiply(trans,mat);
 	}
 	return mat;
