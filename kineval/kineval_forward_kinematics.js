@@ -18,16 +18,6 @@
 
 kineval.robotForwardKinematics = function robotForwardKinematics () { 
     if (robot.links_geom_imported == true) {
-        /*
-        var offset_xform = [];
-        offset_xform = [
-        [1,0,0,0],
-        [0,1,0,0],
-        [0,0,1,0],
-        [0,0,0,1],
-        ];
-        */
-        
         var offset_xform = [];
         offset_xform = matrix_multiply(generate_rotation_matrix_X(-Math.PI/2),generate_rotation_matrix_Z(-Math.PI/2));
         
@@ -40,7 +30,6 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
         [0,0,1,0],
         [0,0,0,1],
         ];
-        //console.log(offset_xform);
     }
     kineval.buildFKTransforms = 1;
     if (typeof kineval.buildFKTransforms === 'undefined') {
@@ -106,6 +95,7 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
             }
 
         }
+        //console.log(rlinks[rlinks.length-1]);
     }
     // STENCIL: implement kineval.buildFKTransforms();
 }
