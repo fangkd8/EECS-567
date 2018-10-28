@@ -63,7 +63,7 @@ function init() {
 
     // initialize pendulum controls
     pendulum.control = 0;
-    pendulum.desired = Math.PI/0.7;
+    pendulum.desired = Math.PI/1.7 - Math.PI;
     pendulum.desired_dot = 0;
 
     // initialize integral term accumulated error to zero
@@ -73,7 +73,8 @@ function init() {
     gravity = 9.81;  // Earth gravity
 
     // initialize pendulum PID servo gains
-    pendulum.servo = {kp:80, kd:150, ki:1};  // no control
+    pendulum.servo = {kp:650, kd:100, ki:25};  // no control
+    //pendulum.servo = {kp:100, kd:200, ki:5}; //Euler.
 
     // initialize time and set timestep 
     t = 0;
@@ -90,16 +91,7 @@ function init() {
     servo_error_threshold = 0.001; // threshold for achieving desired
     servo_active_persist = false; // toggle to turn on servo controller
     servo_active_state = {}; // string with current state of servo activation
-	
-	//init for verlet
-	pendulum.angle_previous = pendulum.angle;
-	pendulum_acceleration(pendulum.angle);
-	pendulum.angle = pendulum.angle_previous + pendulum.angle_dot*dt + 0.5*Math.pow(dt,2)*pendulum.doubledot;
-	angle = pendulum.angle;
-	angledot = pendulum.angle_dot;
-	angleddot = pendulum.doubledot;
-	pendulum.angle_dot = 0.0;
-	
+
 	//STENCIL: for verlet integration, a first step in time is needed
 
     document.addEventListener('keydown', function(e) {
@@ -130,8 +122,10 @@ function animate() {
         numerical_integrator = "none";
     if (keyboard.pressed("1"))
         numerical_integrator = "euler";
-    if (keyboard.pressed("2"))
+    if (keyboard.pressed("2")){
         numerical_integrator = "verlet";
+    	verlet_just_begin = true;
+    }
     if (keyboard.pressed("3"))
         numerical_integrator = "velocity verlet";
     if (keyboard.pressed("4"))
@@ -151,15 +145,14 @@ function animate() {
         pendulum.control += -50.0; // add a motor force to the pendulum motor
 
     // STENCIL: implement servo controller
-	kp = pendulum.servo.kp
-	ki = pendulum.servo.ki
-	kd = pendulum.servo.kd		
+	kp = pendulum.servo.kp;
+	ki = pendulum.servo.ki;
+	kd = pendulum.servo.kd;		
 	error = pendulum.desired - pendulum.angle;
 	accumulated_error = error + accumulated_error;		
 	error_pre = pendulum.desired - pendulum.angle_previous;
-	pendulum.control = kp*error + ki*accumulated_error + kd*(error-error_pre)/dt;
-	//console.log(accumulated_error);
-	
+	pendulum.control = kp*error + ki*accumulated_error*dt + kd*(error-error_pre)/dt;
+	console.log(error,accumulated_error);
     // toggle activation of servo controller from user interaction
     if (keyboard.pressed("c"))
         servo_active_persist = !servo_active_persist;
@@ -177,7 +170,7 @@ function animate() {
     // integrate pendulum state forward in time by dt
     if (typeof numerical_integrator === "undefined")
         numerical_integrator = "none";
-    if (numerical_integrator === "euler") { 
+    if (numerical_integrator === "euler") {
 		pendulum.angle_previous = pendulum.angle;
 		pendulum.angle = pendulum.angle + dt*pendulum.angle_dot;
 		pendulum_acceleration(pendulum.angle_previous);
@@ -186,14 +179,22 @@ function animate() {
 
     }
     else if (numerical_integrator === "verlet") {
-		pendulum_acceleration(pendulum.angle);
-		var pre = pendulum.angle;
-		pendulum.angle = 2*pendulum.angle - pendulum.angle_previous + pendulum.doubledot*Math.pow(dt,2);
-		pendulum.angle_previous = pre;
+    	if (verlet_just_begin == true){
+    		pendulum_acceleration(pendulum.angle_previous);
+    		pendulum.angle = pendulum.angle_previous + pendulum.angle_dot*dt + 0.5*pendulum.doubledot*Math.pow(dt,2);
+    	}
+    	else{
+			pendulum_acceleration(pendulum.angle);
+			var pre = pendulum.angle;
+			pendulum.angle = 2*pendulum.angle - pendulum.angle_previous + pendulum.doubledot*Math.pow(dt,2);
+			pendulum.angle_previous = pre;
+		}
 	// STENCIL: basic Verlet integration
+	//console.log(verlet_just_begin);
 
     }
     else if (numerical_integrator === "velocity verlet") {
+    	pendulum.angle_previous = pendulum.angle;
 		pendulum_acceleration(pendulum.angle);
 		pendulum.angle = pendulum.angle + pendulum.angle_dot*dt + 0.5*pendulum.doubledot*Math.pow(dt,2);
 		pre = pendulum.doubledot;
@@ -204,16 +205,6 @@ function animate() {
 
     }
     else if (numerical_integrator === "runge-kutta") {
-	    //pendulum control.
-		/*kp = pendulum.servo.kp
-		ki = pendulum.servo.ki
-		kd = pendulum.servo.kd
-		error = pendulum.desired - pendulum.angle;
-		accumulated_error = error + accumulated_error;
-		error_pre = pendulum.desired - pendulum.angle_previous;
-		pendulum.control = kp*error + ki*accumulated_error + kd*(error-error_pre)/dt;
-		console.log(error,error_pre,accumulated_error);
-		//*/
 		pendulum.angle_previous = pendulum.angle;
 		kx1 = pendulum.angle;
 		kv1 = pendulum.angle_dot;
@@ -241,7 +232,7 @@ function animate() {
         pendulum.angle_dot = (pendulum.angle-pendulum.angle_previous)/dt;
         numerical_integrator = "none";
     }
-
+    verlet_just_begin = false;
     // set the angle of the pendulum
     pendulum.geom.rotation.y = pendulum.angle;  // threejs cylinders have their axes along the y-axis
 
@@ -416,3 +407,6 @@ function createScene() {
 </script>
 </body>
 </html>
+
+
+
