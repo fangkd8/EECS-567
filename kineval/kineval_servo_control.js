@@ -35,6 +35,7 @@ kineval.setpointDanceSequence = function execute_setpoints() {
     kkp = 0;
     var gpa = [];
     gpa = kineval.setpoints[m[i]];
+	kineval.params.dance_pose_index = i+1;
     for (x in robot.joints){
         kkp = kkp+robot.joints[x].angle;
     }
