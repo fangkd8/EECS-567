@@ -18,16 +18,6 @@
 
 kineval.robotForwardKinematics = function robotForwardKinematics () { 
     if (robot.links_geom_imported == true) {
-        /*
-        var offset_xform = [];
-        offset_xform = [
-        [1,0,0,0],
-        [0,1,0,0],
-        [0,0,1,0],
-        [0,0,0,1],
-        ];
-        */
-        
         var offset_xform = [];
         offset_xform = matrix_multiply(generate_rotation_matrix_X(-Math.PI/2),generate_rotation_matrix_Z(-Math.PI/2));
         
@@ -40,7 +30,6 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
         [0,0,1,0],
         [0,0,0,1],
         ];
-        //console.log(offset_xform);
     }
     kineval.buildFKTransforms = 1;
     if (typeof kineval.buildFKTransforms === 'undefined') {
@@ -73,40 +62,107 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
     var t = [];
     t = robot.origin.xyz; 
     traverseFKBase(t,t0,t1,t2,onset_xform);
-    //console.log(offset_xform);
-    //base.xform = matrix_multiply(base.xform,offset_xform);
     robot_heading = matrix_multiply(base.xform,robot_heading);
     robot_lateral = matrix_multiply(base.xform,robot_lateral);
     traverseFKBase(t,t0,t1,t2,offset_xform);
     rlinks = new Array();
-    //console.log(base.child);
-    for (x in robot.joints){
-        for (i=0;i<base.children.length;i++){
-            if (robot.joints[x].name == base.children[i]){
-                robot.joints[x].xform = matrix_multiply(base.xform,traverseFKJoint(x,onset_xform));
-                //robot.joints[x].xform = matrix_multiply(offset_xform,robot.joints[x].xform);
-                child = robot.joints[x].child;
-                traverseFKLink(robot.links[child],robot.joints[x]);
-                rlinks.push(robot.links[child]);
-            }
-        }
-    }
-    for (i=0;i<rlinks.length;i++){
-        if (rlinks[i].children.length!==0){
-            ex = rlinks[i].children.length;
-            for (j=0;j<ex;j++){
-                nam = rlinks[i].children[j];
-                parent = rlinks[i].name;
-                robot.joints[nam].xform = matrix_multiply(robot.links[parent].xform,traverseFKJoint(nam,onset_xform)); 
-                //robot.joints[nam].xform = matrix_multiply(offset_xform,robot.joints[nam].xform);
-                chi = robot.joints[nam].child;
-                traverseFKLink(robot.links[chi],robot.joints[nam]);
-                rlinks.push(robot.links[chi]);
-                //rlinks[i].children.shift();                
-            }
 
+    if (robot.links_geom_imported == undefined){
+        for (x in robot.joints){
+            for (i=0;i<base.children.length;i++){
+                if (robot.joints[x].name == base.children[i]){
+                    robot.joints[x].q = quaternion_from_axisangle(robot,x);
+                    robot.joints[x].mat = quaternion_to_rotation_matrix(robot.joints[x].q);                
+                    robot.joints[x].xform = matrix_multiply(base.xform,traverseFKJoint(x,onset_xform));
+                    child = robot.joints[x].child;
+                    traverseFKLink(robot.links[child],robot.joints[x]);
+                    robot.links[child].xform = matrix_multiply(robot.links[child].xform,robot.joints[x].mat);
+                    rlinks.push(robot.links[child]);
+                }
+            }
+        }
+
+        for (i=0;i<rlinks.length;i++){
+            if (rlinks[i].children.length!==0){
+                ex = rlinks[i].children.length;
+                for (j=0;j<ex;j++){
+                    nam = rlinks[i].children[j];
+                    parent = rlinks[i].name;
+                    robot.joints[nam].xform = matrix_multiply(robot.links[parent].xform,traverseFKJoint(nam,onset_xform)); 
+                    robot.joints[nam].q = quaternion_from_axisangle(robot,nam);
+                    chi = robot.joints[nam].child;
+                    robot.joints[nam].mat = quaternion_to_rotation_matrix(robot.joints[nam].q);
+                    traverseFKLink(robot.links[chi],robot.joints[nam]);
+                    robot.links[chi].xform = matrix_multiply(robot.links[chi].xform,robot.joints[nam].mat);
+                    rlinks.push(robot.links[chi]);
+                }
+            }
         }
     }
+    
+    else {
+        for (x in robot.joints){
+            for (i=0;i<base.children.length;i++){
+                if (robot.joints[x].name == base.children[i]){
+                    robot.joints[x].xform = matrix_multiply(base.xform,traverseFKJoint(x,onset_xform));
+                    child = robot.joints[x].child;
+                    traverseFKLink(robot.links[child],robot.joints[x]);
+                    if (robot.joints[x].type == 'revolute'||robot.joints[x].type == 'continuous'){
+                        robot.joints[x].q = quaternion_from_axisangle(robot,x);
+                        robot.joints[x].mat = quaternion_to_rotation_matrix(robot.joints[x].q);
+                        robot.links[child].xform = matrix_multiply(robot.links[child].xform,robot.joints[x].mat); 
+                    }
+                    else if (robot.joints[x].type == 'prismatic'){
+                        var t=[];
+                        if (robot.joints[x].angle > robot.joints[x].limit.upper){
+                            robot.joints[x].angle = robot.joints[x].limit.upper;
+                        }
+                        else if (robot.joints[x].angle < robot.joints[x].limit.lower){
+                            robot.joints[x].angle = robot.joints[x].limit.lower;
+                        }
+                        t = vector_multi(robot.joints[x].angle,robot.joints[x].axis);
+                        var mt =[];
+                        mt = generate_translation_matrix(t);
+                        robot.links[child].xform = matrix_multiply(robot.links[child].xform,mt);
+                    }              
+                    rlinks.push(robot.links[child]);
+                }
+            }
+        }
+
+        for (i=0;i<rlinks.length;i++){
+            if (rlinks[i].children.length!==0){
+                ex = rlinks[i].children.length;
+                for (j=0;j<ex;j++){
+                    nam = rlinks[i].children[j];
+                    parent = rlinks[i].name;
+                    robot.joints[nam].xform = matrix_multiply(robot.links[parent].xform,traverseFKJoint(nam,onset_xform)); 
+                    chi = robot.joints[nam].child;
+                    traverseFKLink(robot.links[chi],robot.joints[nam]);
+                    if (robot.joints[nam].type == 'revolute'||robot.joints[nam].type == 'continuous'){
+                        robot.joints[nam].q = quaternion_from_axisangle(robot,nam);
+                        robot.joints[nam].mat = quaternion_to_rotation_matrix(robot.joints[nam].q);
+                        robot.links[chi].xform = matrix_multiply(robot.links[chi].xform,robot.joints[nam].mat);
+                    }
+                    else if (robot.joints[nam].type == 'prismatic'){
+                        var t=[];
+                        if (robot.joints[nam].angle > robot.joints[nam].limit.upper){
+                            robot.joints[nam].angle = robot.joints[nam].limit.upper;
+                        }
+                        else if (robot.joints[nam].angle < robot.joints[nam].limit.lower){
+                            robot.joints[nam].angle = robot.joints[nam].limit.lower;
+                        }
+                        t = vector_multi(robot.joints[nam].angle,robot.joints[nam].axis);
+                        var mt =[];
+                        mt = generate_translation_matrix(t);
+                        robot.links[chi].xform = matrix_multiply(robot.links[chi].xform,mt);
+                    }
+                    rlinks.push(robot.links[chi]);
+                }
+            }
+        }
+    }
+
     // STENCIL: implement kineval.buildFKTransforms();
 }
 function traverseFKBase(a,r1,r2,r3,off){
@@ -131,7 +187,13 @@ function traverseFKJoint(x1,off){
     mat = matrix_multiply(n,mat);
     return mat;
 }
-
+function vector_multi(a,b){
+    var c=[];
+    for (var i = 0; i < b.length; i++) {
+        c[i] = b[i]*a;
+    }
+    return c;
+}
     // STENCIL: reference code alternates recursive traversal over 
     //   links and joints starting from base, using following functions: 
     //     traverseFKBase

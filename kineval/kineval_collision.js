@@ -63,6 +63,16 @@ kineval.poseIsCollision = function robot_collision_test(q) {
 
 function traverse_collision_forward_kinematics_link(link,mstack,q) {
 
+    /* test collision FK
+    console.log(link);
+    */
+    if (typeof link.visual !== 'undefined') {
+        var local_link_xform = matrix_multiply(mstack,generate_translation_matrix(link.visual.origin.xyz[0],link.visual.origin.xyz[1],link.visual.origin.xyz[2]));
+    }
+    else {
+        var local_link_xform = matrix_multiply(mstack,generate_identity());
+    }
+
     // test collision by transforming obstacles in world to link space
 /*
     mstack_inv = matrix_invert_affine(mstack);

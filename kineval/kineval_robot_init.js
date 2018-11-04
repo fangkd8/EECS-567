@@ -60,7 +60,7 @@ kineval.initRobotJoints = function initRobotJoints() {
         		robot.links[tempmat].parent = robot.joints[x].name;
         	}
         	else if(robot.joints[x].parent == robot.links[tempmat].name) {
-        		robot.links[tempmat].children.unshift(robot.joints[x].name);
+        		robot.links[tempmat].children.push(robot.joints[x].name);
         		//console.log(tempmat,robot.links[tempmat].child);
         	}
         }
