@@ -1,0 +1,335 @@
+<html>  
+<body>
+<center><h1>Report</h1>
+
+    -- HW1: Pathplanning.</center>
+ 
+<p>
+Here are the results of pathplanning. 
+<p>From these experiments, I found the Greedy-Best-First algorithm is pretty interesting. According to the theory and analyzing its working ways, there would be some possibilities of search failure, but in these simple planning scenes, I have NOT seen any conditions of failure unless the goal points were out of map`s range, which were unaccessible.</p>
+<p>With all conditions succeeded, Greedy got the best efficiency of planning, although it has some extreme scene which could possibly cause failure. So I think as for these maps, Greedy-Best-Search is the best searching way indeed.</p>
+<p>Besides, while I was coding A* algorithm, I found if I edited the codes of getting current node from shift/push to pop/unshift, some bugs would appear and cause aberrations to the calculation of f_score. Then the searching process would go wrong and the path would be like a snake. The photo of these false paths are really interesting so I manage to get these again and put them in the last paragraph in my report. I believe this phenomenon is related to the order of elements in visit_queue.</p>
+<p>From this project, I gained precious experience of coding, this will help me a lot in my future, especially I had barely got access to coding in my undergraduate years.</p>
+<p>
+<h1>-----------------------------------------------------</h1>
+</p>
+<h1>1. A* Algorithm</h1> 
+</p>
+<p>
+	
+</p>
+<p>
+	<h3>1.1 "Empty" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="A_star_empty_1.jpg"/>
+        </td>
+        <td>
+            <img src="A_star_empty_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>1.2 "Misc" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="A_star_misc_1.jpg"/>
+        </td>
+        <td>
+            <img src="A_star_misc_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>1.3 "Narrow 1" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="A_star_narrow1_1.jpg"/>
+        </td>
+        <td>
+            <img src="A_star_narrow1_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>1.4 "Narrow 2" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="A_star_narrow2_1.jpg"/>
+        </td>
+        <td>
+            <img src="A_star_narrow2_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>1.5 "Three Sections" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="A_star_ts_1.jpg"/>
+        </td>
+        <td>
+            <img src="A_star_ts_2.jpg"/>
+        </td>
+    </tr>
+</table>
+<!-- start a new paragraph -->
+<h1>-----------------------------------------------------</h1>
+<h1>-----------------------------------------------------</h1>
+<h1>2. Depth-First-Search Algorithm</h1> 
+</p>
+<p>
+	
+</p>
+<p>
+	<h3>2.1 "Empty" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="DFS_empty_1.jpg"/>
+        </td>
+        <td>
+            <img src="DFS_empty_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>2.2 "Misc" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="DFS_misc_1.jpg"/>
+        </td>
+        <td>
+            <img src="DFS_misc_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>2.3 "Narrow 1" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="DFS_narrow1_1.jpg"/>
+        </td>
+        <td>
+            <img src="DFS_narrow1_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>2.4 "Narrow 2" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="DFS_narrow2_1.jpg"/>
+        </td>
+        <td>
+            <img src="DFS_narrow2_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>2.5 "Three Sections" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="DFS_ts_1.jpg"/>
+        </td>
+        <td>
+            <img src="DFS_ts_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<h1>-----------------------------------------------------</h1>
+<h1>-----------------------------------------------------</h1>
+<h1>3. Breadth-First-Search Algorithm</h1> 
+</p>
+<p>
+	
+</p>
+<p>
+	<h3>3.1 "Empty" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="BFS_empty_1.jpg"/>
+        </td>
+        <td>
+            <img src="BFS_empty_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>3.2 "Misc" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="BFS_misc_1.jpg"/>
+        </td>
+        <td>
+            <img src="BFS_misc_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>3.3 "Narrow 1" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="BFS_narrow1_1.jpg"/>
+        </td>
+        <td>
+            <img src="BFS_narrow1_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>3.4 "Narrow 2" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="BFS_narrow2_1.jpg"/>
+        </td>
+        <td>
+            <img src="BFS_narrow2_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>3.5 "Three Sections" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="BFS_ts_1.jpg"/>
+        </td>
+        <td>
+            <img src="BFS_ts_2.jpg"/>
+        </td>
+    </tr>
+</table>
+    
+<h1>-----------------------------------------------------</h1>
+<h1>-----------------------------------------------------</h1>
+<h1>4. Greedy--Best-First Algorithm</h1> 
+</p>
+<p>
+	
+</p>
+<p>
+	<h3>4.1 "Empty" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="GBS_empty_1.jpg"/>
+        </td>
+        <td>
+            <img src="GBS_empty_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>4.2 "Misc" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="GBS_misc_1.jpg"/>
+        </td>
+        <td>
+            <img src="GBS_misc_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>4.3 "Narrow 1" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="GBS_narrow1_1.jpg"/>
+        </td>
+        <td>
+            <img src="GBS_narrow1_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>4.4 "Narrow 2" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="GBS_narrow2_1.jpg"/>
+        </td>
+        <td>
+            <img src="GBS_narrow2_2.jpg"/>
+        </td>
+    </tr>
+</table>
+
+<p>
+	<h3>4.5 "Three Sections" scene</h3>
+</p>
+<table>
+    <tr>
+        <td>
+            <img src="GBS_ts_1.jpg"/>
+        </td>
+        <td>
+            <img src="GBS_ts_2.jpg"/>
+        </td>
+    </tr>
+</table>
+<h1>-----------------------------------------------------</h1>
+<h1>-----------------------------------------------------</h1>
+<h1>Some Photos about Failing Process</h1> 
+<img src="Z1.jpg"/>
+<img src="Z2.jpg"/>
+<img src="Z3.jpg"/>
+<script>
+	var img1,img2,img3;
+	img1 = getElementById('Z1.jpg');
+	img2 = getElementById('Z2.jpg');
+	img3 = getElementById('Z3.jpg');
+</script>
+</body>
+</html>
+
