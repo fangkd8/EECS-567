@@ -326,6 +326,39 @@ kineval.initParameters = function initParameters() {
         {"torso_t0":0,"headpan":1.6,"headnod":0,"display_joint":0,"right_torso_arm_mount":0,"right_s0":-0.5,"right_s1":1,"right_e0":-2.7,"right_e1":0,"right_w0":0.4,"right_w1":0.1,"right_w2":2.3,"left_torso_arm_mount":0,"left_s0":-1.7,"left_s1":1,"left_e0":-0.3,"left_e1":1.4,"left_w0":0,"left_w1":-1,"left_w2":-1},
         ];
     }
+    if (robot.name === 'mr2'){
+        kineval.params.dance_sequence_index = [0,1,2,3,0,2,3,1,3,0];
+        kineval.setpoints = [
+        {
+          "clavicle_right_yaw": -0.5100000000000002,
+          "shoulder_right_yaw": -0.5900000000000003,
+          "upperarm_right_pitch": -0.9700000000000006,
+          "forearm_right_yaw": 0.7600000000000005,
+          "clavicle_left_roll": 0
+        },
+        {
+          "clavicle_right_yaw": -0.4600000000000003,
+          "shoulder_right_yaw": 0.9600000000000007,
+          "upperarm_right_pitch": 0.8500000000000006,
+          "forearm_right_yaw": 1.2108534842555114e-23,
+          "clavicle_left_roll": -0.5800000000000003
+        },
+        {
+          "clavicle_right_yaw": 0.03999999999999998,
+          "shoulder_right_yaw": -0.5000000000000002,
+          "upperarm_right_pitch": 2.5099999999999905,
+          "forearm_right_yaw": 1.2108534842555114e-23,
+          "clavicle_left_roll": -0.5800000000000003
+        },
+        {
+          "clavicle_right_yaw": -1.9200000000000015,
+          "shoulder_right_yaw": 0.25000000000000017,
+          "upperarm_right_pitch": 1.590000000000001,
+          "forearm_right_yaw": -1.300000000000001,
+          "clavicle_left_roll": 0.3900000000000003
+        }
+        ];
+    }
     //kineval
     // initialize inverse kinematics target location 
     // KE 3 : ik_target param is redundant as an argument into inverseKinematics 
