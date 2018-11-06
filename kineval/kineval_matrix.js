@@ -4,7 +4,6 @@
 
 function matrix_copy(m1) {
     // returns 2D array that is a copy of m1
-
     var mat = [];
     var i,j;
 
@@ -33,75 +32,100 @@ function matrix_multiply(m1, m2) {
 }
 
 function matrix_transpose(m1) {
-	var mat = [];
-	var i,j;
-	
-	for (i=0;i<m1[0].length;i++){
-		mat[i] = [];
-		for (j=0;j<m1.length;j++){
-			mat[i][j]=m1[j][i];
-		}
-	}
-	return mat;	
+    var mat = [];
+    var i,j;
+    if (typeof(m1[0].length)!=='undefined'){
+        for (i=0;i<m1[0].length;i++){
+            mat[i] = [];
+            for (j=0;j<m1.length;j++){
+                mat[i][j]=m1[j][i];
+            }
+        }
+    }
+    else if(typeof(m1[0].length)=='undefined'){
+        for (i=0;i<m1.length;i++){
+            mat[i] = [];
+        }
+        for (j=0;j<m1.length;j++){
+            mat[j][0]=m1[j];
+        }
+    }
+    
+    return mat; 
 }
 
-function matrix_inverse(M){
-    var i, j, k, dim, temp;
-	dim = M.length;
-    var m1 = [], m2 = [];
-    for(i=0; i<dim; i+=1){
-        m1[i]=[];
-        m2[i]=[];
-        for(j=0; j<dim; j+=1){
-            if(i==j){ 
-				m1[i][j] = 1; 
-			}
-            else{ 
-				m1[i][j] = 0; 
-			}
-            m2[i][j] = M[i][j];
+function matrix_inverse(a){
+	//this way is in LU decomposition of solving the inverse of matrix.
+	var low = [];
+    var up = matrix_copy(a);
+    n = a.length;
+    for (var i=0;i<n;i++){
+        low[i] = [];
+        for (l=0;l<n;l++){
+            low[i][l]=0;
         }
     }
-    for(i=0; i<dim; i+=1){
-        temp = m2[i][i];
-        if(temp==0){
-            for(k=i+1; k<dim; k+=1){
-                if(m2[k][i] != 0){
-                    for(j=0; j<dim; j++){
-                        temp = m2[i][j];
-                        m2[i][j] = m2[k][j];
-                        m2[k][j] = temp;
-                        temp = m1[i][j];
-                        m1[i][j] = m1[k][j];
-                        m1[k][j] = temp;
-                    }
-                    break;
-                }
-            }
-            temp = m2[i][i];
-            if(temp==0){
-				return
-			}
-        }
-        for(j=0; j<dim; j++){
-            m2[i][j] = m2[i][j]/temp; 
-            m1[i][j] = m1[i][j]/temp; 
-        }
+    for (var i=0;i<n;i++){
+        low[i][i] = 1;
+    }
 
-        for(k=0; k<dim; k++){
-            if(k==i){
-				continue;
-			}
-
-            temp = m2[k][i];
-
-            for(j=0; j<dim; j++){
-                m2[k][j] -= temp*m2[i][j]; 
-                m1[k][j] -= temp*m1[i][j]; 
+    for (j=0;j<n-1;j++){
+        for (i=j+1;i<n;i++){
+            mult = up[i][j]/up[j][j];
+            low[i][j] = mult;
+            for(k=j;k<n;k++){
+                up[i][k] = up[i][k]-mult*up[j][k];
             }
         }
     }
+    //invup is the inverse of U, invlo is the inverse of L.
+    var invup = [];
+    var invlo = [];
+    for (i=0;i<n;i++){
+        invup[i]=[];
+        invlo[i]=[];
+        for(j=0;j<n;j++){
+            invup[i][j]=0;
+            invlo[i][j]=0;
+        }
+    }
+    
+    for (i=0;i<n;i++){
+        invup[i][i] = 1/up[i][i];
+        for(k=i-1;k>=0;k--){
+            s=0;
+            for(j=k+1;j<=i;j++){
+                s=s+up[k][j]*invup[j][i];
+            }
+            invup[k][i]=-s/up[k][k];
+        }
+    }
+    for (i=0;i<n;i++){
+        invlo[i][i]=1/low[i][i];
+        for(k=i+1;k<n;k++){
+            for (j=i;j<=k-1;j++){
+                invlo[k][i]=invlo[k][i]-low[k][j]*invlo[j][i];
+            }
+        }
+    }
+    var m1=[];
+    m1 = matrix_multiply(invup,invlo);
     return m1;
+}
+
+function linear_solve(A,b){
+    var mat =[];
+    mat = matrix_inverse(A);
+    if (typeof(b[0].length)=='undefined'){
+        var b0 = [];
+        b0 = matrix_transpose(b);
+        var sol =[];
+        sol = matrix_multiply(mat,b0);
+    }
+    else if (typeof(b[0].length!=='undefined')){
+        sol = matrix_multiply(mat,b);
+    }
+    return sol;
 }
 
 function matrix_invert_affine(m1){
@@ -136,6 +160,7 @@ function vector_cross(a,b){
 	c[2]=a[0]*b[1]-a[1]*b[0];
 	return c;
 }
+
 function vector_normalize(a){
 	var i,sum=0;
 	for (i=0;i<a.length;i++){
@@ -149,15 +174,8 @@ function vector_normalize(a){
 	}
 	return a1;
 }
+
 function generate_identity(a,r1,r2,r3,off){
-/*	var mat=[];
-	mat=[
-	[1,0,0,0],
-	[0,1,0,0],
-	[0,0,1,0],
-	[0,0,0,1]
-	];
-	return mat;*/
 	m1 = generate_rotation_matrix_X(r1);
     m2 = generate_rotation_matrix_Y(r2);
     m3 = generate_rotation_matrix_Z(r3);
@@ -168,6 +186,7 @@ function generate_identity(a,r1,r2,r3,off){
     mat = matrix_multiply(n,mat);
     return mat;
 }
+
 function generate_translation_matrix(a){
 	var mat=[];
 	var mat0=[1,0,0,0];
@@ -180,6 +199,7 @@ function generate_translation_matrix(a){
 	mat[2][3] = a[2];
 	return mat;
 }
+
 function generate_rotation_matrix_Y(theta){
 	var cos,sin;
 	cos = Math.cos(theta);
@@ -193,6 +213,7 @@ function generate_rotation_matrix_Y(theta){
 	];
 	return mat;
 }
+
 function generate_rotation_matrix_Z(theta){
 	var cos,sin;
 	cos = Math.cos(theta);
@@ -206,6 +227,7 @@ function generate_rotation_matrix_Z(theta){
 	];
 	return mat;
 }
+
 function generate_rotation_matrix_X(theta){
 	var cos,sin;
 	cos = Math.cos(theta);
