@@ -73,7 +73,7 @@ function init() {
     gravity = 9.81;  // Earth gravity
 
     // initialize pendulum PID servo gains
-    pendulum.servo = {kp:650, kd:100, ki:25};  // no control
+    pendulum.servo = {kp:550, kd:100, ki:25};  // no control
     //pendulum.servo = {kp:100, kd:200, ki:5}; //Euler.
 
     // initialize time and set timestep 
@@ -140,11 +140,12 @@ function animate() {
 
     // add user force from user interaction
     if ( keyboard.pressed("d") )
-        pendulum.control += 50.0;  // add a motor force to the pendulum motor
+        pendulum.control += 1.0;  // add a motor force to the pendulum motor
     else if ( keyboard.pressed("a") )
-        pendulum.control += -50.0; // add a motor force to the pendulum motor
+        pendulum.control += -1.0; // add a motor force to the pendulum motor
 
     // STENCIL: implement servo controller
+    
 	kp = pendulum.servo.kp;
 	ki = pendulum.servo.ki;
 	kd = pendulum.servo.kd;		
@@ -152,7 +153,9 @@ function animate() {
 	accumulated_error = error + accumulated_error;		
 	error_pre = pendulum.desired - pendulum.angle_previous;
 	pendulum.control = kp*error + ki*accumulated_error*dt + kd*(error-error_pre)/dt;
-	console.log(error,accumulated_error);
+    if (error < 0.005){
+        pendulum.desired = Math.random()*2*Math.PI;
+    }
     // toggle activation of servo controller from user interaction
     if (keyboard.pressed("c"))
         servo_active_persist = !servo_active_persist;

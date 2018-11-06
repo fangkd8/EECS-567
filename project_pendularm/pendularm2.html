@@ -168,6 +168,11 @@ function animate() {
     error_pre[0] = pendulum.desired[0] - pendulum.angle_previous[0];
     error_pre[1] = pendulum.desired[1] - pendulum.angle_previous[1];
     
+    if (error[0]<0.005 && error[1]<0.005){
+        pendulum.desired[0]=Math.random()*2*Math.PI;
+        pendulum.desired[1]=Math.random()*2*Math.PI;
+    }
+
     //console.log(accumulated_error[0]);
     // toggle activation of servo controller from user interaction
     if (keyboard.pressed("c"))
