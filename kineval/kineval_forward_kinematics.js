@@ -61,10 +61,10 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
     t2 = robot.origin.rpy[2];
     var t = [];
     t = robot.origin.xyz; 
-    traverseFKBase(t,t0,t1,t2,onset_xform);
+    traverseFKBase(t[0],t[1],t[2],t0,t1,t2,onset_xform);
     robot_heading = matrix_multiply(base.xform,robot_heading);
     robot_lateral = matrix_multiply(base.xform,robot_lateral);
-    traverseFKBase(t,t0,t1,t2,offset_xform);
+    traverseFKBase(t[0],t[1],t[2],t0,t1,t2,offset_xform);
     rlinks = new Array();
 
     if (robot.links_geom_imported == undefined){
@@ -122,7 +122,7 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
                         }
                         t = vector_multi(robot.joints[x].angle,robot.joints[x].axis);
                         var mt =[];
-                        mt = generate_translation_matrix(t);
+                        mt = generate_translation_matrix(t[0],t[1],t[2]);
                         robot.links[child].xform = matrix_multiply(robot.links[child].xform,mt);
                     }              
                     rlinks.push(robot.links[child]);
@@ -154,7 +154,7 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
                         }
                         t = vector_multi(robot.joints[nam].angle,robot.joints[nam].axis);
                         var mt =[];
-                        mt = generate_translation_matrix(t);
+                        mt = generate_translation_matrix(t[0],t[1],t[2]);
                         robot.links[chi].xform = matrix_multiply(robot.links[chi].xform,mt);
                     }
                     rlinks.push(robot.links[chi]);
@@ -165,11 +165,11 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
 
     // STENCIL: implement kineval.buildFKTransforms();
 }
-function traverseFKBase(a,r1,r2,r3,off){
+function traverseFKBase(a,b,c,r1,r2,r3,off){
     for (x in robot.links){
         if (robot.links[x].name == robot.base){
             base = robot.links[x];
-            base.xform = generate_identity(a,r1,r2,r3,off);
+            base.xform = generate_identity(a,b,c,r1,r2,r3,off);
         }
     }
 }
@@ -180,7 +180,7 @@ function traverseFKJoint(x1,off){
     m1 = generate_rotation_matrix_X(robot.joints[x1].origin.rpy[0]);
     m2 = generate_rotation_matrix_Y(robot.joints[x1].origin.rpy[1]);
     m3 = generate_rotation_matrix_Z(robot.joints[x1].origin.rpy[2]);
-    n = generate_translation_matrix(robot.joints[x1].origin.xyz);
+    n = generate_translation_matrix(robot.joints[x1].origin.xyz[0],robot.joints[x1].origin.xyz[1],robot.joints[x1].origin.xyz[2]);
     mat = matrix_multiply(m1,off);
     mat = matrix_multiply(m2,mat);
     mat = matrix_multiply(m3,mat);
@@ -209,4 +209,3 @@ function vector_multi(a,b){
     //
     //   if (robot.links_geom_imported) {
     //       var offset_xform = matrix_multiply(generate_rotation_matrix_Y(-Math.PI/2),generate_rotation_matrix_X(-Math.PI/2));
-

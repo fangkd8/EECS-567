@@ -33,8 +33,8 @@ function matrix_multiply(m1, m2) {
 
 function matrix_transpose(m1) {
     var mat = [];
-    var i,j;
-    if (typeof(m1[0].length)!=='undefined'){
+    var i,j,k;
+    if (typeof(m1[0].length)> 1){
         for (i=0;i<m1[0].length;i++){
             mat[i] = [];
             for (j=0;j<m1.length;j++){
@@ -42,12 +42,17 @@ function matrix_transpose(m1) {
             }
         }
     }
-    else if(typeof(m1[0].length)=='undefined'){
-        for (i=0;i<m1.length;i++){
-            mat[i] = [];
+    else if(typeof(m1[0].length) == 'undefined'){
+        for (var i0=0;i0<m1.length;i0++){
+            mat[i0] = [];
         }
         for (j=0;j<m1.length;j++){
             mat[j][0]=m1[j];
+        }
+    }
+    else if(m1[0].length == 1){
+        for (k=0;k<m1.length;k++){
+            mat[k] = m1[k][0];
         }
     }
     
@@ -55,8 +60,8 @@ function matrix_transpose(m1) {
 }
 
 function matrix_inverse(a){
-	//this way is in LU decomposition of solving the inverse of matrix.
-	var low = [];
+    //this way is in LU decomposition of solving the inverse of matrix.
+    var low = [];
     var up = matrix_copy(a);
     n = a.length;
     for (var i=0;i<n;i++){
@@ -135,51 +140,62 @@ function matrix_invert_affine(m1){
 }
 
 function matrix_pseudoinverse(A){
-	var mat=[],trans=[];
-	var N,M;
-	N = A.length;
-	M = A[0].length;
-	trans = matrix_transpose(A);
-	if (N > M){
-		mat = matrix_multiply(trans,A);
-		mat = matrix_inverse(mat);
-		mat = matrix_multiply(mat,trans);
-	}
-	else if(N < M){
-		mat = matrix_multiply(A,trans);
-		mat = matrix_inverse(mat);
-		mat = matrix_multiply(trans,mat);
-	}
-	return mat;
+    var mat=[],trans=[];
+    var N,M;
+    N = A.length;
+    M = A[0].length;
+    trans = matrix_transpose(A);
+    if (N > M){
+        mat = matrix_multiply(trans,A);
+        mat = matrix_inverse(mat);
+        mat = matrix_multiply(mat,trans);
+    }
+    else if(N < M){
+        mat = matrix_multiply(A,trans);
+        mat = matrix_inverse(mat);
+        mat = matrix_multiply(trans,mat);
+    }
+    return mat;
 }
 
 function vector_cross(a,b){
-	var c=[];
-	c[0]=a[1]*b[2]-a[2]*b[1];
-	c[1]=a[2]*b[0]-a[0]*b[2];
-	c[2]=a[0]*b[1]-a[1]*b[0];
-	return c;
+    if (typeof(a[1] == 'undefined')){
+        var c=[];
+        c[0]=a[1]*b[2]-a[2]*b[1];
+        c[1]=a[2]*b[0]-a[0]*b[2];
+        c[2]=a[0]*b[1]-a[1]*b[0];
+    }
+    else {
+        var c = [];
+        for (var i=0;i<a[0].length;i++){
+           c[i]=[];
+        }
+        c[0][0] = a[1][0]*b[2][0]-a[2][0]*b[1][0];
+        c[1][0] = a[2][0]*b[0][0]-a[0][0]*b[2][0];
+        c[2][0] = a[0][0]*b[1][0]-a[1][0]*b[0][0];
+    }
+    return c;
 }
 
 function vector_normalize(a){
-	var i,sum=0;
-	for (i=0;i<a.length;i++){
-		sum = sum+Math.pow(a[i],2);
-	}
-	var j;
-	var a1 = [];
-	for (j=0;j<a.length;j++){
-		a1[j] = 0;
-		a1[j] = a[j]/Math.sqrt(sum);
-	}
-	return a1;
+    var i,sum=0;
+    for (i=0;i<a.length;i++){
+        sum = sum+Math.pow(a[i],2);
+    }
+    var j;
+    var a1 = [];
+    for (j=0;j<a.length;j++){
+        a1[j] = 0;
+        a1[j] = a[j]/Math.sqrt(sum);
+    }
+    return a1;
 }
 
-function generate_identity(a,r1,r2,r3,off){
-	m1 = generate_rotation_matrix_X(r1);
+function generate_identity(a,b,c,r1,r2,r3,off){
+    m1 = generate_rotation_matrix_X(r1);
     m2 = generate_rotation_matrix_Y(r2);
     m3 = generate_rotation_matrix_Z(r3);
-    n = generate_translation_matrix(a);
+    n = generate_translation_matrix(a,b,c);
     mat = matrix_multiply(m1,off);
     mat = matrix_multiply(m2,mat);
     mat = matrix_multiply(m3,mat);
@@ -187,59 +203,59 @@ function generate_identity(a,r1,r2,r3,off){
     return mat;
 }
 
-function generate_translation_matrix(a){
-	var mat=[];
-	var mat0=[1,0,0,0];
-	var mat1=[0,1,0,0];
-	var mat2=[0,0,1,0];
-	var mat3=[0,0,0,1];
-	mat = [mat0,mat1,mat2,mat3];
-	mat[0][3] = a[0];
-	mat[1][3] = a[1];
-	mat[2][3] = a[2];
-	return mat;
+function generate_translation_matrix(a,b,c){
+    var mat=[];
+    var mat0=[1,0,0,0];
+    var mat1=[0,1,0,0];
+    var mat2=[0,0,1,0];
+    var mat3=[0,0,0,1];
+    mat = [mat0,mat1,mat2,mat3];
+    mat[0][3] = a;
+    mat[1][3] = b;
+    mat[2][3] = c;
+    return mat;
 }
 
 function generate_rotation_matrix_Y(theta){
-	var cos,sin;
-	cos = Math.cos(theta);
-	sin = Math.sin(theta);
-	var mat=[];
-	mat = [
-	[cos,0,sin,0],
-	[0,1,0,0],
-	[-sin,0,cos,0],
-	[0,0,0,1]
-	];
-	return mat;
+    var cos,sin;
+    cos = Math.cos(theta);
+    sin = Math.sin(theta);
+    var mat=[];
+    mat = [
+    [cos,0,sin,0],
+    [0,1,0,0],
+    [-sin,0,cos,0],
+    [0,0,0,1]
+    ];
+    return mat;
 }
 
 function generate_rotation_matrix_Z(theta){
-	var cos,sin;
-	cos = Math.cos(theta);
-	sin = Math.sin(theta);
-	var mat=[];
-	mat = [
-	[cos,-sin,0,0],
-	[sin,cos,0,0],
-	[0,0,1,0],
-	[0,0,0,1]
-	];
-	return mat;
+    var cos,sin;
+    cos = Math.cos(theta);
+    sin = Math.sin(theta);
+    var mat=[];
+    mat = [
+    [cos,-sin,0,0],
+    [sin,cos,0,0],
+    [0,0,1,0],
+    [0,0,0,1]
+    ];
+    return mat;
 }
 
 function generate_rotation_matrix_X(theta){
-	var cos,sin;
-	cos = Math.cos(theta);
-	sin = Math.sin(theta);
-	var mat=[];
-	mat = [
-	[1,0,0,0],
-	[0,cos,-sin,0],
-	[0,sin,cos,0],
-	[0,0,0,1]
-	];
-	return mat;
+    var cos,sin;
+    cos = Math.cos(theta);
+    sin = Math.sin(theta);
+    var mat=[];
+    mat = [
+    [1,0,0,0],
+    [0,cos,-sin,0],
+    [0,sin,cos,0],
+    [0,0,0,1]
+    ];
+    return mat;
 }
     // STENCIL: reference matrix code has the following functions:
     //   matrix_multiply
@@ -253,4 +269,3 @@ function generate_rotation_matrix_X(theta){
     //   generate_rotation_matrix_X
     //   generate_rotation_matrix_Y
     //   generate_rotation_matrix_Z
-
