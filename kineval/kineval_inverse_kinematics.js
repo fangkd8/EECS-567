@@ -26,10 +26,7 @@ kineval.robotInverseKinematics = function robot_inverse_kinematics(endeffector_t
             kineval.randomizeIKtrial();
         else // KE: this use of start time assumes IK is invoked before trial
             kineval.params.trial_ik_random.start = new Date();
-    }/*
-    else if ((kineval.params.update_ik)||(kineval.params.ik_orientation_included)) {
-        kineval.iterateIK_with_angle(endeffector_target_world, endeffector_joint, endeffector_position_local);
-    }*/
+    }
 
     kineval.params.update_ik = false; // clear IK request for next iteration
 }
@@ -78,10 +75,9 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
         var nend1 = endeffector_joint;
         var pos1 = matrix_multiply(robot.joints[nend1].xform, endeffector_position_local);
         pos1 = matrix_transpose(pos1); pos1.length = pos1.length-1;
+        pos2 = get_euler_angle(nend1, pos1);
+        console.log(pos1,pos2);  
         /*
-        pos1 = get_euler_angle(nend1, pos1);
-        console.log(pos1);  
-        
         var chain1 = [];
         var idx1 = nend1;
         while (robot.joints[idx1].parent !== base.name){
@@ -210,6 +206,7 @@ function jacobian_trans(chain,p){
 }
 
 function get_euler_angle(x, lis){
+    var lis1 = []
     var rmat = [];
     rmat = robot.joints[x].xform;
     var R32, R33, R31, R21, R11;
@@ -226,8 +223,8 @@ function get_euler_angle(x, lis){
     p = Math.atan(-R31/p3);
     y = Math.atan(R21/R11);
 
-    lis[lis.length] = r;
-    lis[lis.length+1] = p;
-    lis[lis.length+2] = y;
-    return lis;
+    lis1[0] = r;
+    lis1[1] = p;
+    lis1[2] = y;
+    return lis1;
 }
