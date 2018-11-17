@@ -34,7 +34,7 @@ function matrix_multiply(m1, m2) {
 function matrix_transpose(m1) {
     var mat = [];
     var i,j,k;
-    if (typeof(m1[0].length)> 1){
+    if (m1[0].length > 1){
         for (i=0;i<m1[0].length;i++){
             mat[i] = [];
             for (j=0;j<m1.length;j++){
