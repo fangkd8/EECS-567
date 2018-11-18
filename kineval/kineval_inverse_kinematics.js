@@ -17,7 +17,6 @@
 |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| --*/
 
 kineval.robotInverseKinematics = function robot_inverse_kinematics(endeffector_target_world, endeffector_joint, endeffector_position_local) {
-
     // compute joint angle controls to move location on specified link to Cartesian location
     if ((kineval.params.update_ik)||(kineval.params.persist_ik)) { 
         // if update requested, call ik iterator and show endeffector and target
@@ -36,11 +35,29 @@ kineval.robotInverseKinematics = function robot_inverse_kinematics(endeffector_t
 
 kineval.randomizeIKtrial = function randomIKtrial () {
 
-    // update time from start of trial
-    cur_time = new Date();
-    kineval.params.trial_ik_random.time = cur_time.getTime()-kineval.params.trial_ik_random.start.getTime();
+   // update time from start of trial
+   cur_time = new Date();
+   kineval.params.trial_ik_random.time = cur_time.getTime()-kineval.params.trial_ik_random.start.getTime();
 
-    // STENCIL: see instructor for random time trial code
+   // get endeffector Cartesian position in the world
+   endeffector_world = matrix_multiply(robot.joints[robot.endeffector.frame].xform,robot.endeffector.position);
+
+   // compute distance of endeffector to target
+   kineval.params.trial_ik_random.distance_current = Math.sqrt(
+           Math.pow(kineval.params.ik_target.position[0][0]-endeffector_world[0][0],2.0)
+           + Math.pow(kineval.params.ik_target.position[1][0]-endeffector_world[1][0],2.0)
+           + Math.pow(kineval.params.ik_target.position[2][0]-endeffector_world[2][0],2.0) );
+
+   // if target reached, increment scoring and generate new target location
+   // KE 2 : convert hardcoded constants into proper parameters
+   if (kineval.params.trial_ik_random.distance_current < 0.01) {
+       kineval.params.ik_target.position[0][0] = 1.2*(Math.random()-0.5);
+       kineval.params.ik_target.position[1][0] = 1.2*(Math.random()-0.5)+1.5;
+       kineval.params.ik_target.position[2][0] = 0.7*(Math.random()-0.5)+0.5;
+       kineval.params.trial_ik_random.targets += 1;
+       textbar.innerHTML = "IK trial Random: target " + kineval.params.trial_ik_random.targets + " reached at time " + kineval.params.trial_ik_random.time;
+   }
+
 }
 
 kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world, endeffector_joint, endeffector_position_local) {
@@ -107,7 +124,7 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
 			var baka = [];
 			baka = matrix_multiply(jack,suso);
 			for(var i=0;i<baka.length;i++){
-				baka[i][i] += 0.001;
+				baka[i][i] += 0.00001;
 			}
 			baka = matrix_inverse(baka);
 			baka = matrix_multiply(baka, jack);
@@ -116,7 +133,7 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
 			var baka = [];
 			baka = matrix_multiply(suso,jack);
 			for(var i=0;i<baka.length;i++){
-				baka[i][i] += 0.001;
+				baka[i][i] += 0.00001;
 			}
 			baka = matrix_inverse(baka);
 			baka = matrix_multiply(jack,baka);
@@ -149,11 +166,11 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
         var target2 =[];
         target2 = endeffector_target_world.orientation;
         var tg = [];
-        for (var i=0;i<3;i++){
-            tg[i] = target1[i];
+        for (var iq=0;iq<3;iq++){
+            tg[iq] = target1[iq];
         }
-        for (var i=0;i<3;i++){
-            tg[i+3] = target2[i];
+        for (var ix=0;ix<3;ix++){
+            tg[ix+3] = target2[ix];
         }
 
         //tg is the target with both position and euler angle. row vector, 6 entries.
@@ -162,7 +179,7 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
         delta_x1 = vector_minus(tg, pos1);
         delta_x1 = matrix_transpose(delta_x1);
         //vector towards the target. 
-        jack1 = jacobian_trans(chain1,pos1);
+        jack1 = jacobian_trans_6(chain1,pos1);
         qspace1 = matrix_multiply(jack1, delta_x1);
         for (var iv=0;iv<chain1.length;iv++){
             chain1[iv].control = chain1[iv].control + kineval.params.ik_steplength*qspace1[iv][0];
@@ -212,79 +229,77 @@ function get_euler_angle(x){
     var lis1 = []
     var rmat = [];
     rmat = robot.joints[x].xform;
-    var R32, R33, R31, R21, R11;
-    R31 = rmat[2][0];
-    R32 = rmat[2][1];
-    R33 = rmat[2][2];
-    R21 = rmat[1][0];
+    
+    var R11, R12, R13, R23, R33;
     R11 = rmat[0][0];
-    var r, p, y, p1, p2, p3;
-    r = Math.atan(R32/R33);
-    p1 = Math.pow(R32,2);
-    p2 = Math.pow(R33,2);
-    p3 = Math.pow(p1+p2, 0.5);
-    p = Math.atan(-R31/p3);
-    y = Math.atan(R21/R11);
-
+    R12 = rmat[0][1];
+    R13 = rmat[0][2];
+    R23 = rmat[1][2];
+    R33 = rmat[2][2];
+    //console.log(R13);
+    var r,p,y;
+    r = Math.atan(-R23/R33);
+    p = Math.asin(R13);
+    y = Math.atan(-R12/R11);
+    //console.log(p);
     lis1[0] = r;
     lis1[1] = p;
     lis1[2] = y;
-	lis1[3] = 1;
 	
     return lis1;
 }
 
 function jacobian_trans(chain,p){
-    if (p.length == 3){
-        var jaco = [];
-        for (var i=0; i<chain.length; i++){
-            jaco[i] = [];
-        }
-        for (var j=0; j<chain.length; j++){
-            if (chain[j].type == 'prismatic') {
-                xc = chain[j].name;
-                jaco[j] = axis_position(xc);
-            }
-            else {
-                xc = chain[j].name;
-                z1 = axis_position(xc);
-                o1 = joint_position(xc);
-                o = vector_minus(p,o1);
-                jaco[j] = vector_cross(z1, o);
-            }
-        }
+    var jaco = [];
+    for (var i=0; i<chain.length; i++){
+        jaco[i] = [];
     }
-    else if (p.length == 6){
-        var jaco = [];
-        for (var i=0; i<chain.length; i++){
-            jaco[i] = [];
+    for (var j=0; j<chain.length; j++){
+        if (chain[j].type == 'prismatic') {
+            xc = chain[j].name;
+            jaco[j] = axis_position(xc);
         }
-        for (var j=0; j<chain.length; j++){
-            if (chain[j].type == 'prismatic'){
-                xd = chain[j].name;
-                jaco[j] = axis_position(xd);
-                jaco[j][3] = 0;
-                jaco[j][4] = 0;
-                jaco[j][5] = 0;
-            }
-            else {
-                xd = chain[j].name;
-                z2 = axis_position(xd);
-                o2 = joint_position(xc);
-                var pe = [];
-                pe[0] = p[0];
-                pe[1] = p[1];
-                pe[2] = p[2];
-                ox = vector_minus(pe,o2);
-                jaco[j] = vector_cross(z2,ox);
-                var jaco1 = [];
-                jaco1 = z2;
-                jaco[j][3] = jaco1[0];
-                jaco[j][4] = jaco1[1];
-                jaco[j][5] = jaco1[2];
-            }
+        else {
+            xc = chain[j].name;
+            z1 = axis_position(xc);
+            o1 = joint_position(xc);
+            o = vector_minus(p,o1);
+            jaco[j] = vector_cross(z1, o);
         }
     }
     return jaco;
     // This jacobian is after being tranposed.
+}
+
+function jacobian_trans_6(chain, p){
+    var jaco = [];
+    for (var i=0; i<chain.length; i++){
+        jaco[i] = [];
+    }
+    for (var j=0; j<chain.length; j++){
+        if (chain[j].type == 'prismatic'){
+            xd = chain[j].name;
+            jaco[j] = axis_position(xd);
+            jaco[j][3] = 0;
+            jaco[j][4] = 0;
+            jaco[j][5] = 0;
+        }
+        else {
+            xd = chain[j].name;
+            z2 = axis_position(xd);
+            o2 = joint_position(xd);
+            var pe = [];
+            pe[0] = p[0];
+            pe[1] = p[1];
+            pe[2] = p[2];
+            ox = vector_minus(pe,o2);
+            jaco[j] = vector_cross(z2,ox);
+            var jaco1 = [];
+            jaco1 = z2;
+            jaco[j][3] = jaco1[0];
+            jaco[j][4] = jaco1[1];
+            jaco[j][5] = jaco1[2];
+        }
+    }
+    return jaco;
 }
