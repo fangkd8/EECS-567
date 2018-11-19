@@ -119,17 +119,27 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
 		var suso = [];
 		suso = matrix_transpose(jack2); //suso is the Jacobian matrix, jack is J^T.
 		var qs = [];
-		//console.log(suso);
-		
-		if (suso.length >= jack2.length){
+        lamda = 0.1;
+		//flag for damping in pseudoinverse. 
+        if (suso.length >= jack2.length){
 			//var baka = [];
 			baka = matrix_multiply(jack2,suso);
+            if (typeof(ik_pseudoinverse_damping) !== 'undefined'){
+                for (var i=0; i<baka.length; i++){
+                    baka[i][i] += Math.pow(lamda,2);console.log(1);
+                }
+            }
 			baka = matrix_inverse(baka);
 			baka = matrix_multiply(baka, jack2);
 		}
 		else if (suso.length < jack2.length){
 			//var baka = [];
 			baka = matrix_multiply(suso,jack2);
+            if (typeof(ik_pseudoinverse_damping) !== 'undefined'){
+                for (var i=0; i<baka.length; i++){
+                    baka[i][i] += Math.pow(lamda,2);console.log(1);
+                }
+            }
 			baka = matrix_inverse(baka);
 			baka = matrix_multiply(jack2,baka);
 		}
