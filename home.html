@@ -110,12 +110,12 @@ var url_params = {
 };
 
 // preload default robot and world 
-//kineval.loadJSFile("robots/robot_mr2.js","robot");
+kineval.loadJSFile("robots/robot_mr2.js","robot");
 //kineval.loadJSFile("robots/robot_crawler.js","robot");
-//kineval.loadJSFile("robots/robot_simple.js","robot");
+//kineval.loadJSFile("robots/robot_fangkd.js","robot");
 //kineval.loadJSFile("robots/robot_urdf_example.js","robot");
 //kineval.loadJSFile("robots/baxter/baxter.urdf.js","robot");
-kineval.loadJSFile("robots/fetch/fetch.urdf.js","robot");
+//kineval.loadJSFile("robots/fetch/fetch.urdf.js","robot");
 //kineval.loadJSFile("robots/sawyer/sawyer.urdf.js","robot");
 //kineval.loadJSFile("worlds/world_local_minima.js","world");
 kineval.loadJSFile("worlds/world_empty.js","world");
@@ -191,7 +191,7 @@ function my_animate() {
     kineval.robotArmControllerSetpoint(); // PID controller
     kineval.params.update_pd = false; // clear PID request for next iteration
 
-    // if requested, perform inverse kinematics control to reach to point
+    
     kineval.robotInverseKinematics(kineval.params.ik_target, robot.endeffector.frame, robot.endeffector.position);
 
     // if requested, perform configuration space motion planning to home pose
