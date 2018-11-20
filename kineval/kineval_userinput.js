@@ -146,23 +146,23 @@ kineval.handleUserInput = function user_input() {
     // move robot base in the ground plane
     if ( keyboard.pressed("a") ) {  // turn
         textbar.innerHTML = "turning base left";
-        robot.control.rpy[1] += 0.1;
+        robot.control.rpy[1] += 0.03;
     }
     if ( keyboard.pressed("d") ) {  // turn
         textbar.innerHTML = "turning base right";
-        robot.control.rpy[1] += -0.1;
+        robot.control.rpy[1] += -0.03;
     }
     if ( keyboard.pressed("w") ) {  // forward
         textbar.innerHTML = "moving base forward";
         //robot.origin.xyz[2] += 0.1;  // simple but ineffective: not aligned with robot
-        robot.control.xyz[2] += 0.1 * (robot_heading[2][0]-robot.origin.xyz[2]);
-        robot.control.xyz[0] += 0.1 * (robot_heading[0][0]-robot.origin.xyz[0]);
+        robot.control.xyz[2] += 0.03 * (robot_heading[2][0]-robot.origin.xyz[2]);
+        robot.control.xyz[0] += 0.03 * (robot_heading[0][0]-robot.origin.xyz[0]);
     }
     if ( keyboard.pressed("s") ) {  // backward
         textbar.innerHTML = "moving base backward";
         //robot.origin.xyz[2] -= 0.1; // simple but ineffective: not aligned with robot
-        robot.control.xyz[2] += -0.1 * (robot_heading[2][0]-robot.origin.xyz[2]);
-        robot.control.xyz[0] += -0.1 * (robot_heading[0][0]-robot.origin.xyz[0]);
+        robot.control.xyz[2] += -0.03 * (robot_heading[2][0]-robot.origin.xyz[2]);
+        robot.control.xyz[0] += -0.03 * (robot_heading[0][0]-robot.origin.xyz[0]);
     }
     // KE : this needs to be stencilized
     if ( keyboard.pressed("q") ) {  // strafe
@@ -279,9 +279,14 @@ kineval.toggleStartpointMode = function toggle_startpoint_mode() {
 
 
 kineval.changeActiveLinkDown = function change_active_link_down() {
-    if (typeof robot.links[robot.joints[kineval.params.active_joint].child].children !== 'undefined') {
+    if (robot.links[robot.joints[kineval.params.active_joint].child].children.length !== 0) {
         kineval.params.active_link = robot.joints[kineval.params.active_joint].child;
         kineval.params.active_joint = robot.links[kineval.params.active_link].children[0];
+        textbar.innerHTML = kineval.params.active_joint + " is now the active joint";
+    }
+    else if (robot.links[robot.joints[kineval.params.active_joint].child].children.length == 0){
+        kineval.params.active_link = robot.joints[kineval.params.active_joint].parent;
+        kineval.params.active_joint = kineval.params.active_joint;
         textbar.innerHTML = kineval.params.active_joint + " is now the active joint";
     }
 }
