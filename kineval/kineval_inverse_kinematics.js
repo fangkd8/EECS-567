@@ -92,7 +92,7 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
         }
     }
 
-	else if(kineval.params.ik_pseudoinverse){
+	else if((kineval.params.ik_pseudoinverse)&&(!kineval.params.ik_orientation_included)){
 		var nendx = endeffector_joint;
 		var posx = matrix_multiply(robot.joints[nendx].xform, endeffector_position_local);
         posx = matrix_transpose(posx); posx.length = posx.length-1;
@@ -112,7 +112,7 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
         delta_x2 = vector_minus(targetx, posx);
         delta_x2 = matrix_transpose(delta_x2);
 		
-		var jack = [];
+		var jack2 = [];
 		jack2 = jacobian_trans(chain, posx);
 		//console.log(jack);
 		
@@ -126,7 +126,7 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
 			baka = matrix_multiply(jack2,suso);
             if (typeof(ik_pseudoinverse_damping) !== 'undefined'){
                 for (var i=0; i<baka.length; i++){
-                    baka[i][i] += Math.pow(lamda,2);console.log(1);
+                    baka[i][i] += Math.pow(lamda,2);
                 }
             }
 			baka = matrix_inverse(baka);
@@ -137,7 +137,7 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
 			baka = matrix_multiply(suso,jack2);
             if (typeof(ik_pseudoinverse_damping) !== 'undefined'){
                 for (var i=0; i<baka.length; i++){
-                    baka[i][i] += Math.pow(lamda,2);console.log(1);
+                    baka[i][i] += Math.pow(lamda,2);
                 }
             }
 			baka = matrix_inverse(baka);
@@ -152,7 +152,66 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
 
 	}
 	
-    else if(kineval.params.ik_orientation_included){
+    else if((kineval.params.ik_pseudoinverse)&&(kineval.params.ik_orientation_included)){
+        var nendk = endeffector_joint;
+        posk = matrix_multiply(robot.joints[nendk].xform, endeffector_position_local);
+        posk = matrix_transpose(posk); posk.length = posk.length-1;  
+        var pos2k = get_euler_angle(nendk);
+        
+        for (var i=3;i<6;i++){
+            posk[i] = pos2k[i-3];
+        } 
+        var chaink = [];
+        var idxk = nendk;
+        while (robot.joints[idxk].parent !== base.name){
+            var prck = robot.joints[idxk].parent;
+            idxk = robot.links[prck].parent;
+            chaink.push(robot.joints[idxk]);
+        }
+        var targetk =[];
+        targetk = endeffector_target_world.position;
+        targetk = matrix_transpose(targetk); targetk.length = targetk.length-1;
+        var target2k =[];
+        target2k = endeffector_target_world.orientation;
+        var tgk = [];
+        for (var iq=0;iq<3;iq++){
+            tgk[iq] = targetk[iq];
+        }
+        for (var ix=0;ix<3;ix++){
+            tgk[ix+3] = target2k[ix];
+        }
+        
+        //tg is the target with both position and euler angle. row vector, 6 entries.
+
+        var delta_xk = [];
+        delta_xk = vector_minus(tgk, posk);
+        delta_xk = matrix_transpose(delta_xk);
+        //vector towards the target. 
+        var jack3 = [];
+        jack3 = jacobian_trans_6(chaink,posk);
+        var suso8 = matrix_transpose(jack3);
+        if (suso8.length >= jack3.length){
+            var baka0 = [];
+            baka0 = matrix_multiply(jack3,suso8);
+            baka0 = matrix_inverse(baka0);
+            baka0 = matrix_multiply(baka0, jack3);
+        }
+        else if (suso8.length < jack3.length){
+            var baka0 = [];
+            baka0 = matrix_multiply(suso8,jack3);
+            baka0 = matrix_inverse(baka0);
+            baka0 = matrix_multiply(jack3,baka0);
+        }
+
+        var qspace2 = [];
+        qspace2 = matrix_multiply(baka0, delta_xk);
+        for (var iv=0;iv<chaink.length;iv++){
+            chaink[iv].control = chaink[iv].control + kineval.params.ik_steplength*qspace2[iv][0];
+        }
+    }
+    
+
+    else if((!kineval.params.ik_pseudoinverse)&&(kineval.params.ik_orientation_included)){
         var nend1 = endeffector_joint;
         var pos1 = matrix_multiply(robot.joints[nend1].xform, endeffector_position_local);
         pos1 = matrix_transpose(pos1); pos1.length = pos1.length-1;  
@@ -183,14 +242,15 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
 
         //tg is the target with both position and euler angle. row vector, 6 entries.
 
-        //var delta_x1 = [];
+        var delta_x1 = [];
         delta_x1 = vector_minus(tg, pos1);
         delta_x1 = matrix_transpose(delta_x1);
         //vector towards the target. 
+        var jack1 = [];
         jack1 = jacobian_trans_6(chain1,pos1);
         qspace1 = matrix_multiply(jack1, delta_x1);
         for (var iv=0;iv<chain1.length;iv++){
-            chain1[iv].angle += kineval.params.ik_steplength*qspace1[iv][0];
+            chain1[iv].control = chain1[iv].control + kineval.params.ik_steplength*qspace1[iv][0];
         }
     }
     // STENCIL: implement inverse kinematics iteration
@@ -244,12 +304,12 @@ function get_euler_angle(x){
     R13 = rmat[0][2];
     R23 = rmat[1][2];
     R33 = rmat[2][2];
-    //console.log(R13);
+    
     var r,p,y;
     r = Math.atan(-R23/R33);
     p = Math.asin(R13);
     y = Math.atan(-R12/R11);
-    //console.log(p);
+
     lis1[0] = r;
     lis1[1] = p;
     lis1[2] = y;
