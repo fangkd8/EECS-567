@@ -25,10 +25,7 @@ kineval.robotInverseKinematics = function robot_inverse_kinematics(endeffector_t
             kineval.randomizeIKtrial();
         else // KE: this use of start time assumes IK is invoked before trial
             kineval.params.trial_ik_random.start = new Date();
-    }/*
-    else if ((kineval.params.update_ik)||(kineval.params.ik_orientation_included)) {
-        kineval.iterateIK_with_angle(endeffector_target_world, endeffector_joint, endeffector_position_local);
-    }*/
+    }
 
     kineval.params.update_ik = false; // clear IK request for next iteration
 }
@@ -93,58 +90,58 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
     }
 
 	else if((kineval.params.ik_pseudoinverse)&&(!kineval.params.ik_orientation_included)){
-		var nendx = endeffector_joint;
-		var posx = matrix_multiply(robot.joints[nendx].xform, endeffector_position_local);
-        posx = matrix_transpose(posx); posx.length = posx.length-1;
+		var nend = endeffector_joint;
+		var pos = matrix_multiply(robot.joints[nend].xform, endeffector_position_local);
+        pos = matrix_transpose(pos); pos.length = pos.length-1;
         //position of endeffector;
         var chain = [];
-        var idx = nendx;
+        var idx = nend;
         while (robot.joints[idx].parent !== base.name){
             var prc = robot.joints[idx].parent;
             idx = robot.links[prc].parent;
             chain.push(robot.joints[idx]);
         } // Chain from endeffector to Base.    
 
-        var targetx = [];
-        targetx = endeffector_target_world.position;
-        targetx = matrix_transpose(targetx); targetx.length = targetx.length-1;
-        var delta_x2 = [];
-        delta_x2 = vector_minus(targetx, posx);
-        delta_x2 = matrix_transpose(delta_x2);
+        var target = [];
+        target = endeffector_target_world.position;
+        target = matrix_transpose(target); target.length = target.length-1;
+        var delta_x = [];
+        delta_x = vector_minus(target, pos);
+        delta_x = matrix_transpose(delta_x);
 		
-		var jack2 = [];
-		jack2 = jacobian_trans(chain, posx);
+		var jack = [];
+		jack = jacobian_trans(chain, pos);
 		//console.log(jack);
 		
 		var suso = [];
-		suso = matrix_transpose(jack2); //suso is the Jacobian matrix, jack is J^T.
+		suso = matrix_transpose(jack); //suso is the Jacobian matrix, jack is J^T.
 		var qs = [];
         lamda = 0.1;
 		//flag for damping in pseudoinverse. 
-        if (suso.length >= jack2.length){
-			//var baka = [];
-			baka = matrix_multiply(jack2,suso);
+        if (suso.length >= jack.length){
+			var baka = [];
+			baka = matrix_multiply(jack,suso);
             if (typeof(ik_pseudoinverse_damping) !== 'undefined'){
                 for (var i=0; i<baka.length; i++){
                     baka[i][i] += Math.pow(lamda,2);
                 }
             }
 			baka = matrix_inverse(baka);
-			baka = matrix_multiply(baka, jack2);
+			baka = matrix_multiply(baka, jack);
 		}
-		else if (suso.length < jack2.length){
-			//var baka = [];
-			baka = matrix_multiply(suso,jack2);
+		else if (suso.length < jack.length){
+			var baka = [];
+			baka = matrix_multiply(suso,jack);
             if (typeof(ik_pseudoinverse_damping) !== 'undefined'){
                 for (var i=0; i<baka.length; i++){
                     baka[i][i] += Math.pow(lamda,2);
                 }
             }
 			baka = matrix_inverse(baka);
-			baka = matrix_multiply(jack2,baka);
+			baka = matrix_multiply(jack,baka);
 		}
         
-		qs = matrix_multiply(baka, delta_x2);
+		qs = matrix_multiply(baka, delta_x);
 		
 		for (var ib=0;ib<chain.length;ib++){
             chain[ib].control = chain[ib].control + kineval.params.ik_steplength*qs[ib][0];
@@ -212,20 +209,20 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
     
 
     else if((!kineval.params.ik_pseudoinverse)&&(kineval.params.ik_orientation_included)){
-        var nend1 = endeffector_joint;
-        var pos1 = matrix_multiply(robot.joints[nend1].xform, endeffector_position_local);
-        pos1 = matrix_transpose(pos1); pos1.length = pos1.length-1;  
-        var pos2 = get_euler_angle(nend1);
+        var nend = endeffector_joint;
+        var pos = matrix_multiply(robot.joints[nend].xform, endeffector_position_local);
+        pos = matrix_transpose(pos); pos.length = pos.length-1;  
+        var pos2 = get_euler_angle(nend);
         
 		for (var i=3;i<6;i++){
-            pos1[i] = pos2[i-3];
+            pos[i] = pos2[i-3];
         } 
-        var chain1 = [];
-        var idx1 = nend1;
-        while (robot.joints[idx1].parent !== base.name){
-            var prc1 = robot.joints[idx1].parent;
-            idx1 = robot.links[prc1].parent;
-            chain1.push(robot.joints[idx1]);
+        var chain = [];
+        var idx = nend;
+        while (robot.joints[idx].parent !== base.name){
+            var prc = robot.joints[idx].parent;
+            idx = robot.links[prc].parent;
+            chain.push(robot.joints[idx]);
         }
         var target1 =[];
         target1 = endeffector_target_world.position;
@@ -243,14 +240,14 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
         //tg is the target with both position and euler angle. row vector, 6 entries.
 
         var delta_x1 = [];
-        delta_x1 = vector_minus(tg, pos1);
+        delta_x1 = vector_minus(tg, pos);
         delta_x1 = matrix_transpose(delta_x1);
         //vector towards the target. 
         var jack1 = [];
-        jack1 = jacobian_trans_6(chain1,pos1);
+        jack1 = jacobian_trans_6(chain,pos);
         qspace1 = matrix_multiply(jack1, delta_x1);
-        for (var iv=0;iv<chain1.length;iv++){
-            chain1[iv].control = chain1[iv].control + kineval.params.ik_steplength*qspace1[iv][0];
+        for (var iv=0;iv<chain.length;iv++){
+            chain[iv].control = chain[iv].control + kineval.params.ik_steplength*qspace1[iv][0];
         }
     }
     // STENCIL: implement inverse kinematics iteration
