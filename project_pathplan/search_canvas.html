@@ -80,8 +80,8 @@ function initSearch() {
     //planning_scene = "empty";
     //planning_scene = "misc";
     //planning_scene = "narrow1";
-    //planning_scene = "narrow2";
-    planning_scene = "three_sections";
+    planning_scene = "narrow2";
+    //planning_scene = "three_sections";
 
     // specify default eps (epsilon) spatial resolution variable
     //   for RRT, specifies threshold radius for step size and reaching goal
@@ -485,8 +485,34 @@ return search_result;
 
 
 function iterateRRT() {
+    search_result = 'extending';
+    qrand1 = randomConfig(q_goal);
+    ind1 = findNearestNeighbor(T_a, qrand1);
+    q_new = extendRRT(T_a.vertices[ind1], qrand1);
 
+    if (!testCollision(q_new)){
+        insertTreeVertex(T_a, q_new);
+        insertTreeEdge(T_a, T_a.newest, ind1);
+    }
 
+    if ((Math.abs(T_a.vertices[T_a.newest].vertex[0]-q_goal[0])<0.05)&&(Math.abs(T_a.vertices[T_a.newest].vertex[1]-q_goal[1])<0.05)) {
+        //drawHighlightedPath(T_a.vertices);
+        console.log(T_a.vertices[T_a.newest].vertex[0]-q_goal[0], T_a.vertices[T_a.newest].vertex[1]-q_goal[1]);
+        search_result = 'succeeded';
+        q_n = T_a.vertices[T_a.newest].vertex;
+        path = [];
+        path[0] = q_n;
+        flag = 0;
+        while ((q_n[0]!==q_init[0])&&(q_n[1]!==q_init[1])){
+            q_n = q_n.parent.vertex;
+            flag += 1;
+            path[flag] = q_n;
+        }
+        drawHighlightedPath(path);
+        search_iterate = false;
+        path_length = path.length*eps;
+    }
+    return search_result;
     // STENCIL: implement a single iteration of an RRT algorithm.
     //   An asynch timing mechanism is used instead of a for loop to avoid 
     //   blocking and non-responsiveness in the browser.
@@ -505,8 +531,104 @@ function iterateRRT() {
 }
 
 function iterateRRTConnect() {
-
-
+    search_result = 'extended';
+    qrand1 = randomConfig(q_goal);
+    ind1 = findNearestNeighbor(T_a, qrand1);
+    q_new1 = extendRRT(T_a.vertices[ind1], qrand1);
+    if (!testCollision(q_new1)&&(T_b.vertices.length>=T_a.vertices.length)){
+        insertTreeVertex(T_a, q_new1);
+        insertTreeEdge(T_a, T_a.newest, ind1);
+        ind2 = findNearestNeighbor(T_b, q_new1);
+        q_new2 = extendRRT(T_b.vertices[ind2], q_new1);
+        if (!testCollision(q_new2)){
+            insertTreeVertex(T_b, q_new2);
+            insertTreeEdge(T_b, T_b.newest, ind2);
+            if ((Math.abs(q_new2[0]-q_new1[0])>0.05)&&(Math.abs(q_new2[1]-q_new1[1])>0.05)){
+                q_new3 = extendRRT(T_b.vertices[T_b.newest], q_new1);
+                if (!testCollision(q_new3)) {
+                    insertTreeVertex(T_b, q_new3);
+                    insertTreeEdge(T_b, T_b.newest, T_b.newest);
+                    q_new2 = q_new3;
+                }
+            } 
+            else if ((Math.abs(q_new2[0]-q_new1[0])<0.05)&&(Math.abs(q_new2[1]-q_new1[1])<0.05)){
+                search_iterate = false;
+                search_result = 'succeeded';
+                q_n = T_a.vertices[T_a.newest].vertex;
+                path = [];
+                path[0] = q_n;
+                flag = 0;
+                while ((q_n[0]!==q_init[0])&&(q_n[1]!==q_init[1])){
+                    q_n = q_n.parent.vertex;
+                    flag += 1;
+                    path[flag] = q_n;
+                }
+                drawHighlightedPath(path);
+                path_length = path.length*eps;
+                q_n = T_b.vertices[T_b.newest].vertex;
+                path = [];
+                path[0] = q_n;
+                flag = 0;
+                while ((q_n[0]!==q_goal[0])&&(q_n[1]!==q_goal[1])){
+                    q_n = q_n.parent.vertex;
+                    flag += 1;
+                    path[flag] = q_n;
+                }
+                drawHighlightedPath(path);
+                path_length = path_length+path.length*eps;
+            }
+        }
+    }
+    else if (T_b.vertices.length<T_a.vertices.length){
+        qrand1 = randomConfig(q_init);
+        ind1 = findNearestNeighbor(T_b, qrand1);
+        q_new1 = extendRRT(T_b.vertices[ind1], qrand1);
+        if (!testCollision(q_new1)){
+            insertTreeVertex(T_b, q_new1);
+            insertTreeEdge(T_b, T_b.newest, ind1);
+            ind2 = findNearestNeighbor(T_a, q_new1);
+            q_new2 = extendRRT(T_a.vertices[ind2], q_new1);
+            if (!testCollision(q_new2)){
+                insertTreeVertex(T_a, q_new2);
+                insertTreeEdge(T_a, T_a.newest, ind2);
+                if ((Math.abs(q_new2[0]-q_new1[0])>0.05)&&(Math.abs(q_new2[1]-q_new1[1])>0.05)){
+                    q_new3 = extendRRT(T_a.vertices[T_a.newest], q_new1);
+                    if (!testCollision(q_new3)) {
+                        insertTreeVertex(T_a, q_new3);
+                        insertTreeEdge(T_a, T_a.newest, T_a.newest);
+                        q_new2 = q_new3;
+                    }
+                }
+                else if ((Math.abs(q_new2[0]-q_new1[0])<0.05)&&(Math.abs(q_new2[1]-q_new1[1])<0.05)){
+                    search_iterate = false;
+                    search_result = 'succeeded';
+                    q_n = T_a.vertices[T_a.newest].vertex;
+                    path = [];
+                    path[0] = q_n;
+                    flag = 0;
+                    while ((q_n[0]!==q_init[0])&&(q_n[1]!==q_init[1])){
+                        q_n = q_n.parent.vertex;
+                        flag += 1;
+                        path[flag] = q_n;
+                    }
+                    drawHighlightedPath(path);
+                    path_length = path.length*eps;
+                    q_n = T_b.vertices[T_b.newest].vertex;
+                    path = [];
+                    path[0] = q_n;
+                    flag = 0;
+                    while ((q_n[0]!==q_goal[0])&&(q_n[1]!==q_goal[1])){
+                        q_n = q_n.parent.vertex;
+                        flag += 1;
+                        path[flag] = q_n;
+                    }
+                    drawHighlightedPath(path);
+                    path_length = path_length+path.length*eps;
+                }
+            }
+        }
+    }
+    return search_result;
     // STENCIL: implement a single iteration of an RRT-Connect algorithm.
     //   An asynch timing mechanism is used instead of a for loop to avoid 
     //   blocking and non-responsiveness in the browser.
@@ -571,8 +693,8 @@ function drawHighlightedPath(path) {
     ctx.lineWidth=4;
     ctx.beginPath();
     for (i=1;i<path.length;i++) {
-        ctx.moveTo(xformWorldViewX(path[i-1].vertex[0]),xformWorldViewY(path[i-1].vertex[1]));
-        ctx.lineTo(xformWorldViewX(path[i].vertex[0]),xformWorldViewY(path[i].vertex[1]));
+        ctx.moveTo(xformWorldViewX(path[i-1][0]),xformWorldViewY(path[i-1][1]));
+        ctx.lineTo(xformWorldViewX(path[i][0]),xformWorldViewY(path[i][1]));
     }
     ctx.stroke();
 }
@@ -761,6 +883,9 @@ function insertTreeEdge(tree,q1_idx,q2_idx){
     draw_2D_edge_configurations(tree.vertices[q1_idx].vertex,tree.vertices[q2_idx].vertex); 
 }
 
+//////////////////////////////////////////////////
+/////     MIN HEAP IMPLEMENTATION FUNCTIONS
+//////////////////////////////////////////////////
 function minheap(heap){
     var j,temp;
     for(j=heap.length-1;j>=0;j--){
@@ -773,10 +898,6 @@ function minheap(heap){
         }
     }    
 }
-//////////////////////////////////////////////////
-/////     MIN HEAP IMPLEMENTATION FUNCTIONS
-//////////////////////////////////////////////////
-
     // STENCIL: implement min heap functions for graph search priority queue.
     //   These functions work use the 'priority' field for elements in graph.
 
@@ -785,7 +906,46 @@ function minheap(heap){
 //////////////////////////////////////////////////
 /////     RRT IMPLEMENTATION FUNCTIONS
 //////////////////////////////////////////////////
+function randomConfig(q1){
+    prob = 0.15;
+    var p = Math.random();
+    var q = [];
+    if (p<=prob){
+        q = q1;
+    }
+    else if (p>prob){
+        q[0] = Math.random()*(5+0.8) - 0.8;
+        q[1] = Math.random()*(4.2+1.7) - 1.7;
+    }
+    return q;
+}
+function findNearestNeighbor(tree, qrand){
+    var le = tree.vertices.length;
+    var d = Infinity;
+    for (var i=0; i<le; i++){
+        var a = tree.vertices[i].vertex[0];
+        var b = tree.vertices[i].vertex[1];
+        var dis = Math.pow(Math.pow(qrand[0]-a,2)+Math.pow(qrand[1]-b,2),0.5);
+        if (dis<=d){
+            d = dis;
+            ind = i;
+        }
+        //console.log(d.ind);
+    }
+    return ind;
+}
+function extendRRT(qnear, qrand){
+    var delta_x = [];
+    delta_x[0] = qrand[0] - qnear.vertex[0];
+    delta_x[1] = qrand[1] - qnear.vertex[1];
+    var theta = Math.atan2(delta_x[1], delta_x[0]);
+    var q_new = [];
+    q_new[0] = qnear.vertex[0] + eps*Math.cos(theta);
+    q_new[1] = qnear.vertex[1] + eps*Math.sin(theta);
+    q_new.parent = qnear;
 
+    return q_new;
+}
     // STENCIL: implement RRT-Connect functions here, such as:
     //   extendRRT
     //   connectRRT
