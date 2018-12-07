@@ -430,20 +430,6 @@ function finish_search(A, B){
     }
     return true;
 }
-
-function rrt_extend(T, q){
-    var ind = find_nearest_neighbor(T, q);
-    q_new = new_config(T.vertices[ind],q);
-
-    if(!kineval.poseIsCollision(q_new)){
-        tree_add_vertex(T, q_new);
-        tree_add_edge(T, T.newest, ind);
-
-        return "advanced";
-    }
-    return "trapped";
-}
-
     // STENCIL: implement RRT-Connect functions here, such as:
     //   rrt_extend
     //   rrt_connect
