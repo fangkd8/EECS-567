@@ -52,11 +52,25 @@ kineval.poseIsCollision = function robot_collision_test(q) {
     // test base origin (not extents) against world boundary extents
     if ((q[0]<robot_boundary[0][0])||(q[0]>robot_boundary[1][0])||(q[2]<robot_boundary[0][2])||(q[2]>robot_boundary[1][2]))
         return robot.base;
-
+    
+    var mstack = generate_identity();
+    if (robot.links_geom_imported == true) {
+        var offset_xform = [];
+        offset_xform = matrix_multiply(generate_rotation_matrix_X(-Math.PI/2),generate_rotation_matrix_Z(-Math.PI/2));
+        mstack = matrix_multiply(offset_xform, mstack);
+    }
+    var xrot = generate_rotation_matrix_X(q[3]);
+    var yrot = generate_rotation_matrix_Y(q[4]);
+    var zrot = generate_rotation_matrix_Z(q[5]);
+    var tran = generate_translation_matrix(q[0],q[1],q[2]);
+    mstack = matrix_multiply(xrot, mstack);
+    mstack = matrix_multiply(yrot, mstack);
+    mstack = matrix_multiply(zrot, mstack);
+    mstack = matrix_multiply(tran, mstack);
     // traverse robot kinematics to test each body for collision
     // STENCIL: implement forward kinematics for collision detection
     //return robot_collision_forward_kinematics(q);
-
+    return traverse_collision_forward_kinematics_link(base, mstack, q);
 }
 
 
@@ -130,6 +144,40 @@ function traverse_collision_forward_kinematics_link(link,mstack,q) {
     // return false, when no collision detected for this link and children 
     return false;
 }
+function traverse_collision_forward_kinematics_joint(joint, mstack, q){
+ 
+    var xrot = generate_rotation_matrix_X(joint.origin.rpy[0]);
+    var yrot = generate_rotation_matrix_Y(joint.origin.rpy[1]);
+    var zrot = generate_rotation_matrix_Z(joint.origin.rpy[2]);
+    var tran = generate_translation_matrix(joint.origin.xyz[0],joint.origin.xyz[1],joint.origin.xyz[2]);
 
+    var Rm = matrix_multiply(yrot, xrot);
+    Rm = matrix_multiply(zrot, Rm);
+    Rm = matrix_multiply(tran, Rm);
 
+    var quart = new_quarternion(q[q_names[joint.name]], joint.axis);
+    quart = quaternion_to_rotation_matrix(quart);
+    Rm = matrix_multiply(Rm, quart);
+    
+    var jstack;
+    jstack = matrix_multiply(mstack, Rm);
+
+    if (typeof(joint.child)!=='undefined'){
+        return traverse_collision_forward_kinematics_link(robot.links[joint.child], jstack, q);
+    }
+}
+function new_quarternion(angle, axis){
+    var x,y,z;
+    x = axis[0];
+    y = axis[1];
+    z = axis[2];
+    var quart = [];
+    quart[0] = Math.cos(angle/2);
+    quart[1] = [];
+    quart[1][0] = x*Math.sin(0.5*angle);
+    quart[1][1] = y*Math.sin(0.5*angle);
+    quart[1][2] = z*Math.sin(0.5*angle);
+
+    return quart;
+}
 

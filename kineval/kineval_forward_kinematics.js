@@ -166,10 +166,24 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
     // STENCIL: implement kineval.buildFKTransforms();
 }
 function traverseFKBase(a,b,c,r1,r2,r3,off){
+    var m1=[];
+    var m2=[];
+    var m3=[];
+    var n=[];
+    var mat=[];
     for (x in robot.links){
         if (robot.links[x].name == robot.base){
             base = robot.links[x];
-            base.xform = generate_identity(a,b,c,r1,r2,r3,off);
+            base.xform = generate_identity();
+            m1 = generate_rotation_matrix_X(r1);
+            m2 = generate_rotation_matrix_Y(r2);
+            m3 = generate_rotation_matrix_Z(r3);
+            n = generate_translation_matrix(a,b,c);
+            mat = matrix_multiply(m1,off);
+            mat = matrix_multiply(m2,mat);
+            mat = matrix_multiply(m3,mat);
+            mat = matrix_multiply(n,mat);
+            base.xform = matrix_multiply(base.xform, mat);
         }
     }
 }

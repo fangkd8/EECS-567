@@ -125,6 +125,14 @@ kineval.robotRRTPlannerInit = function robot_rrt_planner_init() {
 
     // make sure the rrt iterations are not running faster than animation update
     cur_time = Date.now();
+
+    eps_p = 0.3;
+    eps_a = 0.15;
+
+    T_a = tree_init(q_start_config);
+    T_b = tree_init(q_goal_config);
+
+    path = [];
 }
 
 
@@ -136,7 +144,129 @@ function robot_rrt_planner_iterate() {
 
     if (rrt_iterate && (Date.now()-cur_time > 10)) {
         cur_time = Date.now();
+        if (rrt_alg == 0){
+            qrand = random_config(q_goal_config);
+            ind = find_nearest_neighbor(T_a, qrand);
+            q_new = new_config(T_a.vertices[ind], qrand);
 
+            if (!kineval.poseIsCollision(q_new)){
+                tree_add_vertex(T_a, q_new);
+                tree_add_edge(T_a, T_a.newest, ind);
+            }
+
+            if (finish_search(q_new, q_goal_config)){
+                rrt_iterate = false;
+                kineval.motion_plan = [];
+                q_now = T_a.vertices[T_a.newest];
+                var flag = 0;
+                while (!finish_search(q_now.vertex, q_start_config)){
+                    q_now = q_now.vertex.parent;
+                    path[flag] = q_now;
+                    kineval.motion_plan.unshift(path[flag]);
+                    flag += 1;
+                }
+                
+                for (var i=0; i<path.length-1; i++){
+                    path[i].vertex.parent.geom.material.color = {r:1,g:0,b:0};
+                }
+                T_a.vertices[T_a.newest].geom.material.color = {r:1,g:0,b:0};
+
+                return "reached";
+            }
+
+        }
+
+        if (rrt_alg == 1){
+            qrand = random_config(q_goal_config);
+            ind = find_nearest_neighbor(T_a, qrand);
+            q_new = new_config(T_a.vertices[ind], qrand);
+            if (!kineval.poseIsCollision(q_new)&&T_b.vertices.length>=T_a.vertices.length){
+                tree_add_vertex(T_a, q_new);
+                tree_add_edge(T_a, T_a.newest, ind);
+                ind1 = find_nearest_neighbor(T_b, q_new);
+                q_new1 = new_config(T_b.vertices[ind1], q_new);
+                if (!kineval.poseIsCollision(q_new1)){
+                    tree_add_vertex(T_b, q_new1);
+                    tree_add_edge(T_b, T_b.newest, ind1);
+                    if (!finish_search(q_new1, q_new)){
+                        q_new2 = new_config(T_b.vertices[T_b.newest], q_new);
+                        if (!kineval.poseIsCollision(q_new2)){
+                            tree_add_vertex(T_b,q_new2);
+                            tree_add_edge(T_b,T_b.newest,ind1);
+                            q_new1 = q_new2;
+                        }
+                    }
+                    else if (finish_search(q_new1, q_new)){
+                        rrt_iterate = false;
+                        kineval.motion_plan = [];
+                        q_now = T_a.vertices[T_a.newest];
+                        kineval.motion_plan.unshift(q_now);
+                        while (!finish_search(q_now.vertex, q_start_config)){
+                            q_now = q_now.vertex.parent;
+                            kineval.motion_plan.unshift(q_now);
+                            flag += 1;
+                        }
+                        kineval.motion_plan.unshift(T_a.vertices[0]);
+                        q_now = T_b.vertices[T_b.newest];
+                        kineval.motion_plan.push(q_now);
+                        while (!finish_search(q_now.vertex, q_goal_config)){
+                            q_now = q_now.vertex.parent;
+                            kineval.motion_plan.push(q_now);
+                        }
+                        kineval.motion_plan.push(T_b.vertices[0]);
+                        for (var i=0; i<kineval.motion_plan.length; i++){
+                            kineval.motion_plan[i].geom.material.color = {r:1,g:0,b:0};
+                        }
+                        return "reached";
+                    }
+                }
+            }
+            else if(T_b.vertices.length<T_a.vertices.length){
+                qrand = random_config(q_start_config);
+                ind = find_nearest_neighbor(T_b, qrand);
+                q_new = new_config(T_b.vertices[ind], qrand);
+                if (!kineval.poseIsCollision(q_new)){
+                    tree_add_vertex(T_b, q_new);
+                    tree_add_edge(T_b, T_b.newest, ind);
+                    ind1 = find_nearest_neighbor(T_a, q_new);
+                    q_new1 = new_config(T_a.vertices[ind1],q_new);
+                    if (!kineval.poseIsCollision(q_new1)){
+                        tree_add_vertex(T_a, q_new1);
+                        tree_add_edge(T_a, T_a.newest, ind1);
+                        if (!finish_search(q_new1, q_new)){
+                            q_new2 = new_config(T_a.vertices[T_a.newest], q_new);
+                            if(!kineval.poseIsCollision(q_new2)){
+                                tree_add_vertex(T_a, q_new2);
+                                tree_add_edge(T_a, T_a.newest, ind1);
+                                q_new1 = q_new2;
+                            }
+                        }
+                        else if(finish_search(q_new1, q_new)){
+                            rrt_iterate = false;
+                            kineval.motion_plan = [];
+                            q_now = T_a.vertices[T_a.newest];
+                            kineval.motion_plan.unshift(q_now);
+                            while (!finish_search(q_now.vertex, q_start_config)){
+                                q_now = q_now.vertex.parent;
+                                kineval.motion_plan.unshift(q_now);
+                            }
+                            kineval.motion_plan.unshift(T_a.vertices[0]);
+                            q_now = T_b.vertices[T_b.newest];
+                            kineval.motion_plan.push(q_now);
+                            while (!finish_search(q_now.vertex, q_goal_config)){
+                                q_now = q_now.vertex.parent;
+                                kineval.motion_plan.push(q_now);
+                            }
+                            kineval.motion_plan.push(T_b.vertices[0]);
+                            for (var i=0; i<kineval.motion_plan.length; i++){
+                                kineval.motion_plan[i].geom.material.color = {r:1,g:0,b:0};
+                            }
+                            return "reached";
+                        }
+                    }
+                }
+            }
+        }
     // STENCIL: implement single rrt iteration here. an asynch timing mechanism 
     //   is used instead of a for loop to avoid blocking and non-responsiveness 
     //   in the browser.
@@ -225,7 +355,94 @@ function tree_add_edge(tree,q1_idx,q2_idx) {
 //////////////////////////////////////////////////
 /////     RRT IMPLEMENTATION FUNCTIONS
 //////////////////////////////////////////////////
+function random_config(a){
+    var xval = Math.abs(robot_boundary[0][0]-robot_boundary[1][0]);
+    var zval = Math.abs(robot_boundary[0][2]-robot_boundary[1][2]);
+    var q=[];
+    q[0] = Math.random()*(xval+1) + robot_boundary[0][0];
+    q[1] = 0;
+    q[2] = Math.random()*(zval+1) + robot_boundary[0][2];
+    for (var i=3; i<q_start_config.length; i++){
+        q[i] = Math.random()*2*Math.PI;
+    } 
+    q[3] = 0;
+    q[5] = 0;
+    var p = Math.random();
+    if (p <= 0.15){
+        for (var i=0;i<q_start_config.length;i++){
+            q[i] = a[i];
+        }
+    }
+    //make the robot can only rotate along y"up".
+    return q;
+}
 
+function find_nearest_neighbor(tree, q){
+    var idx;
+    var max_dis = Infinity;
+    for (var i=0; i<tree.vertices.length; i++){
+        var a = tree.vertices[i].vertex[0];
+        var b = tree.vertices[i].vertex[2];
+        var dis = Math.pow(Math.pow(q[0]-a,2)+Math.pow(q[2]-b,2),0.5);
+        for (var j=4; j<tree.vertices[i].length;j++){
+            dis += q[j]-tree.vertices[i].vertex[j];
+        }
+        if (dis <= max_dis){
+            max_dis = dis;
+            idx = i;
+        }
+    }
+    return idx;
+}
+
+function new_config(qnear, qrand){
+    var delta_x = [];
+    delta_x[0] = qrand[0] - qnear.vertex[0];
+    delta_x[1] = 0;
+    delta_x[2] = qrand[2] - qnear.vertex[2]; 
+    var theta = Math.atan2(delta_x[2],delta_x[0]);
+    var q_new = [];
+    q_new[0] = qnear.vertex[0] + eps_p*Math.cos(theta);
+    q_new[1] = 0;
+    q_new[2] = qnear.vertex[2] + eps_p*Math.sin(theta);
+    q_new[3] = 0;
+    q_new[4] = qnear.vertex[4] + eps_a*(qrand[4] - qnear.vertex[4]);
+    q_new[5] = 0;
+    for (var i=6; i<qrand.length; i++){
+        q_new[i] = qnear.vertex[i] + eps_a*(qrand[i] - qnear.vertex[i]);
+    }
+    q_new.parent = qnear;
+    return q_new;
+}
+
+function finish_search(A, B){
+    //test q_new and q_goal;
+    var a = A[0] - B[0];
+    var b = A[2] - B[2];
+    if (Math.sqrt(Math.pow(a,2)+Math.pow(b,2))>eps_p) {
+        return false;
+    }
+    for (i=4; i < q_start_config.length; i++){
+        if(i==5) {continue};
+        if(Math.abs(b[i]-a[i])>eps_a){
+            return false;
+        }
+    }
+    return true;
+}
+
+function rrt_extend(T, q){
+    var ind = find_nearest_neighbor(T, q);
+    q_new = new_config(T.vertices[ind],q);
+
+    if(!kineval.poseIsCollision(q_new)){
+        tree_add_vertex(T, q_new);
+        tree_add_edge(T, T.newest, ind);
+
+        return "advanced";
+    }
+    return "trapped";
+}
 
     // STENCIL: implement RRT-Connect functions here, such as:
     //   rrt_extend
