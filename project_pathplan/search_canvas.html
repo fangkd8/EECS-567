@@ -547,7 +547,7 @@ function iterateRRTConnect() {
                 q_new3 = extendRRT(T_b.vertices[T_b.newest], q_new1);
                 if (!testCollision(q_new3)) {
                     insertTreeVertex(T_b, q_new3);
-                    insertTreeEdge(T_b, T_b.newest, T_b.newest);
+                    insertTreeEdge(T_b, T_b.newest, ind2);
                     q_new2 = q_new3;
                 }
             } 
@@ -595,7 +595,7 @@ function iterateRRTConnect() {
                     q_new3 = extendRRT(T_a.vertices[T_a.newest], q_new1);
                     if (!testCollision(q_new3)) {
                         insertTreeVertex(T_a, q_new3);
-                        insertTreeEdge(T_a, T_a.newest, T_a.newest);
+                        insertTreeEdge(T_a, T_a.newest, ind2);
                         q_new2 = q_new3;
                     }
                 }
@@ -647,7 +647,27 @@ function iterateRRTConnect() {
 }
 
 function iterateRRTStar() {
+    search_result = 'extending';
+    qrand = randomConfig(q_goal);
+    ind = findNearestNeighbor(T_a, qrand);
+    q_new = steer(T_a, ind, qrand);
+    if (q_new !== 'invalid'){
+        nearlist = nearby(T_a, q_new);
+        [z_min, c_min] = choose_parent(T_a, nearlist, ind, q_new);
+        insertTreeVertex(T_a, q_new);
+        insertTreeEdge(T_a, z_min, T_a.newest);
 
+        T_a.vertices[T_a.newest].cost = c_min;
+
+        new_idx = T_a.newest;
+        T_a = rewire(T_a, nearlist, z_min, new_idx)
+    }
+    if (cal_dis(q_new, q_goal) < eps){
+        search_iterate = false;
+        search_result = 'succeeded';
+        find_path(T_a, q_new);
+    }
+    return search_result;
 }
 
 //////////////////////////////////////////////////
@@ -831,6 +851,7 @@ function initRRT(q) {
     tree.vertices[0] = {};
     tree.vertices[0].vertex = q;
     tree.vertices[0].edges = [];
+    tree.vertices[0].cost = 0;
 
     // maintain index of newest vertex added to tree
     tree.newest = 0;
@@ -881,6 +902,18 @@ function insertTreeEdge(tree,q1_idx,q2_idx){
 
     // draw edge on canvas
     draw_2D_edge_configurations(tree.vertices[q1_idx].vertex,tree.vertices[q2_idx].vertex); 
+}
+
+function removeTreeEdge(tree, q1_idx, q2_idx){
+    for (var i=0; i<tree.vertices[q1_idx].edges.length;i++){
+        if (tree.vertices[q1_idx].edges[i] == q2_idx)
+            tree.vertices[q1_idx].edges.splice(i,1);
+    }
+
+    for (var i=0; i<tree.vertices[q2_idx].edges.length;i++){
+        if (tree.vertices[q2_idx].edges[i] == q1_idx)
+            tree.vertices[q2_idx].edges.splice(i,1);
+    }
 }
 
 //////////////////////////////////////////////////
@@ -945,6 +978,106 @@ function extendRRT(qnear, qrand){
     q_new.parent = qnear;
 
     return q_new;
+}
+function steer(T, idx, rand){
+    q_near = T.vertices[idx];
+    q_new = extendRRT(q_near, rand);
+    if (testCollision(q_new))
+        q_new = 'invalid';
+    return q_new;
+}
+
+function cal_dis(a, b){
+    var c = Math.pow(a[0] - b[0], 2);
+    var d = Math.pow(a[1] - b[1], 2);
+    return Math.sqrt(c+d);
+}
+
+function nearby(T, new1){
+    var r = 2*eps;
+    var list = [];
+    for (i=0;i<T.vertices.length;i++){
+        var d = cal_dis(T.vertices[i].vertex, new1)
+        if (d<=r){
+            list.push(i);
+        }
+    }
+    return list;
+}
+
+function choose_parent(T, list, idx, znew){
+    var zmin = idx;
+    var cmin = T.vertices[idx].cost + cal_dis(T.vertices[idx].vertex, znew);
+    for (i=0; i<list.length; i++){
+        var excited = T.vertices[list[i]].cost + cal_dis(T.vertices[list[i]].vertex, znew);
+        if (excited < cmin){
+            zmin = list[i];
+            cmin = excited;
+        }
+    }
+
+    return [zmin, cmin];
+}
+
+function reconnect(T, idx, znew){
+    var p = find_parent_idx(T, T.vertices[idx].vertex);
+    removeTreeEdge(T, p, idx);
+    T.vertices[idx].parent = T.vertices[znew];
+    insertTreeEdge(T, znew, idx);
+    return T;
+}
+
+function find_parent_idx(T, q){
+    for (var i=0; i<T.vertices.length; i++){
+        var a = [];
+        a = T.vertices[i].vertex;
+        if (cal_dis(a, q.parent.vertex) == 0)
+            return i;
+    }
+}
+
+function rewire(T, list, idx1, idx2){
+    for (var i=0;i<list.length;i++){
+        if (list[i] !== idx1){
+            var znewcost = T.vertices[idx2].cost;
+            var n_n = cal_dis(T.vertices[idx2].vertex, T.vertices[list[i]].vertex);
+            var znearcost = T.vertices[list[i]].cost;
+
+            var flag_co = false;
+
+            for (var j=0; j<Math.floor(n_n/eps); j++){
+                var test = steer(T, idx2, T.vertices[list[i]].vertex);
+                if (test == 'invalid')
+                    flag_co = true;
+            }
+
+            if(!flag_co && ((znewcost + n_n) < znearcost))
+                T = reconnect(T, list[i], idx2);
+        }
+    }
+    return T;
+}
+
+function find_path(T, q){
+    for (var i=0; i<T.vertices.length; i++){
+        if (T.vertices[i].vertex == q){
+            node = T.vertices[i];
+            break;
+        }
+    }
+    console.log(node);
+    while (typeof node.vertex.parent !=='undefined'){
+        draw_path_configuration(node.vertex);
+        node = node.vertex.parent;
+    }
+}
+
+function draw_path_configuration(q) {
+    // draw location of 2D configuration on canvas
+    c = document.getElementById("myCanvas");
+    ctx = c.getContext("2d");
+    ctx.fillStyle = "#FFFF00";
+    ctx.fillRect(xformWorldViewX(q[0])-3,xformWorldViewY(q[1])-3,6,6);
 }
     // STENCIL: implement RRT-Connect functions here, such as:
     //   extendRRT
