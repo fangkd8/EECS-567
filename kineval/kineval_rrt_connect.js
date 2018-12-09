@@ -140,11 +140,11 @@ kineval.robotRRTPlannerInit = function robot_rrt_planner_init() {
 function robot_rrt_planner_iterate() {
 
     var i;
-    rrt_alg = 1;  // 0: basic rrt (OPTIONAL), 1: rrt_connect (REQUIRED)
+    rrt_alg = 0;  // 0: basic rrt (OPTIONAL), 1: rrt_connect (REQUIRED), 2: rrt-star;
 
     if (rrt_iterate && (Date.now()-cur_time > 10)) {
         cur_time = Date.now();
-        if (rrt_alg == 0){
+        if (rrt_alg == 0){//RRT
             qrand = random_config(q_goal_config);
             ind = find_nearest_neighbor(T_a, qrand);
             q_new = new_config(T_a.vertices[ind], qrand);
@@ -157,26 +157,25 @@ function robot_rrt_planner_iterate() {
             if (finish_search(q_new, q_goal_config)){
                 rrt_iterate = false;
                 kineval.motion_plan = [];
-                q_now = T_a.vertices[T_a.newest];
+                var n = find_nearest_neighbor(T_a, q_goal_config);
+                q_now = T_a.vertices[n];
                 var flag = 0;
                 while (!finish_search(q_now.vertex, q_start_config)){
+                    kineval.motion_plan.unshift(q_now);
                     q_now = q_now.vertex.parent;
-                    path[flag] = q_now;
-                    kineval.motion_plan.unshift(path[flag]);
                     flag += 1;
                 }
                 
-                for (var i=0; i<path.length-1; i++){
-                    path[i].vertex.parent.geom.material.color = {r:1,g:0,b:0};
+                for (var i=0; i<flag; i++){
+                    kineval.motion_plan[i].geom.material.color = {r:0,g:1,b:0};
                 }
-                T_a.vertices[T_a.newest].geom.material.color = {r:1,g:0,b:0};
 
                 return "reached";
             }
 
         }
 
-        if (rrt_alg == 1){
+        if (rrt_alg == 1){//RRT-connect
             qrand = random_config(q_goal_config);
             ind = find_nearest_neighbor(T_a, qrand);
             q_new = new_config(T_a.vertices[ind], qrand);
@@ -267,6 +266,41 @@ function robot_rrt_planner_iterate() {
                 }
             }
         }
+
+        if (rrt_alg == 2){ //RRT*
+            qrand = random_config(q_goal_config);
+            ind = find_nearest_neighbor(T_a, qrand);
+            q_new = steer(T_a, ind, qrand);
+            if (q_new !== 'invalid'){
+                list = find_near_list(T_a, q_new);
+                [z_min, c_min] = choose_parent(T_a, list, ind, q_new);
+                tree_add_vertex(T_a, q_new);
+                tree_add_edge(T_a, z_min, T_a.newest);
+                T_a.vertices[T_a.newest].cost = c_min;
+                new_idx = T_a.newest;
+                T_a = rewire(T_a, list, z_min, new_idx);
+            }
+
+            if (finish_search(q_new, q_goal_config)){
+                rrt_iterate=false;
+                kineval.motion_plan = [];
+                var n = find_nearest_neighbor(T_a, q_goal_config);
+                q_now = T_a.vertices[n];
+                var flag = 0;
+                while (!finish_search(q_now.vertex, q_start_config)){
+                    kineval.motion_plan.unshift(q_now);
+                    q_now = q_now.vertex.parent;
+                    flag += 1;
+                }
+                
+                for (var i=0; i<flag; i++){
+                    kineval.motion_plan[i].geom.material.color = {r:0,g:0,b:1};
+                }
+                //T_a.vertices[T_a.newest].geom.material.color = {r:0,g:0,b:1};
+
+                return "reached";
+            }
+        }
     // STENCIL: implement single rrt iteration here. an asynch timing mechanism 
     //   is used instead of a for loop to avoid blocking and non-responsiveness 
     //   in the browser.
@@ -298,7 +332,7 @@ function tree_init(q) {
     tree.vertices[0] = {};
     tree.vertices[0].vertex = q;
     tree.vertices[0].edges = [];
-
+    tree.vertices[0].cost = 0;
     // create rendering geometry for base location of vertex configuration
     add_config_origin_indicator_geom(tree.vertices[0]);
 
@@ -350,6 +384,18 @@ function tree_add_edge(tree,q1_idx,q2_idx) {
     tree.vertices[q2_idx].edges.push(tree.vertices[q1_idx]);
 
     // can draw edge here, but not doing so to save rendering computation
+}
+
+function removeTreeEdge(tree, q1_idx, q2_idx){
+    for (var i=0; i<tree.vertices[q1_idx].edges.length;i++){
+        if (tree.vertices[q1_idx].edges[i] == q2_idx)
+            tree.vertices[q1_idx].edges.splice(i,1);
+    }
+
+    for (var i=0; i<tree.vertices[q2_idx].edges.length;i++){
+        if (tree.vertices[q2_idx].edges[i] == q1_idx)
+            tree.vertices[q2_idx].edges.splice(i,1);
+    }
 }
 
 //////////////////////////////////////////////////
@@ -419,17 +465,129 @@ function finish_search(A, B){
     //test q_new and q_goal;
     var a = A[0] - B[0];
     var b = A[2] - B[2];
+    if (A == 'invalid'){return false;}
     if (Math.sqrt(Math.pow(a,2)+Math.pow(b,2))>eps_p) {
         return false;
     }
     for (i=4; i < q_start_config.length; i++){
-        if(i==5) {continue};
+        if(i==5) {continue;};
         if(Math.abs(b[i]-a[i])>eps_a){
             return false;
         }
     }
     return true;
 }
+
+function rrt_extend(T, q){
+    var ind = find_nearest_neighbor(T, q);
+    q_new = new_config(T.vertices[ind],q);
+
+    if(!kineval.poseIsCollision(q_new)){
+        tree_add_vertex(T, q_new);
+        tree_add_edge(T, T.newest, ind);
+
+        return "advanced";
+    }
+    return "trapped";
+}
+// For RRT*. 
+function steer(T, idx, rand){
+    q_near = T.vertices[idx];
+    q_new = new_config(q_near, rand);
+    if (kineval.poseIsCollision(q_new))
+        q_new = 'invalid';
+    return q_new;
+}
+
+function find_near_list(T, new1){
+    var list = [];
+    var l = new1.length;
+    for (i=0;i<T.vertices.length;i++){
+        var t = norm_dis(T.vertices[i].vertex, new1);
+        if (t < 2*eps_p + 2*(l-5)*eps_a)
+            list.push(i);
+    }
+    return list;
+}
+
+function choose_parent(T, list, idx, z_new){
+    var z_min = idx;
+    var c_min = T.vertices[idx].cost + norm_dis(T.vertices[idx].vertex, z_new);
+    for(var i=0;i<list.length;i++){
+        var excited = T.vertices[list[i]].cost + norm_dis(T.vertices[list[i]].vertex, z_new);
+        if (excited < c_min){
+            z_min = list[i];
+            c_min = excited;
+        }
+    }
+    return [z_min, c_min];
+}
+
+function reconnect(T, idx, znew){
+    var p = find_parent_idx(T, T.vertices[idx].vertex);
+    removeTreeEdge(T, p, idx);
+    T.vertices[idx].parent = T.vertices[znew];
+    tree_add_edge(T, znew, idx);
+    return T;
+}
+
+function rewire(T, list, idx1, idx2){
+    for (var i=0;i<list.length;i++){
+        if (list[i] !== idx1){
+            var znewcost = T.vertices[idx2].cost;
+            var n_n = norm_dis(T.vertices[idx2].vertex, T.vertices[list[i]].vertex);
+            var znearcost = T.vertices[list[i]].cost;
+
+            var flag_co = false;
+
+            for (var j=0; j<Math.floor(n_n/eps_p); j++){
+                var test = steer(T, idx2, T.vertices[list[i]].vertex);
+                if (test == 'invalid')
+                    flag_co = true;
+            }
+
+            if(!flag_co && ((znewcost + n_n) < znearcost))
+                T = reconnect(T, list[i], idx2);
+        }
+    }
+    return T;
+}
+
+//Assistance. 
+function norm_dis(A, B){
+    var norm = 0;
+    for(var i=0; i<A.length; i++){
+        norm += Math.pow(A[i] - B[i], 2);
+    }
+    norm = Math.sqrt(norm);
+    return norm;
+}
+
+function range_collision(A, B){
+    //justify in RRT*. 
+    var a = A[0] - B[0];
+    var b = A[2] - B[2];
+    if (Math.sqrt(Math.pow(a,2)+Math.pow(b,2))>2*eps_p) {
+        return false;
+    }
+    for (i=4; i < q_start_config.length; i++){
+        if(i==5) {continue};
+        if(Math.abs(b[i]-a[i])>2*eps_a){
+            return false;
+        }
+    }
+    return true;
+}
+
+function find_parent_idx(T, q){
+    for (var i=0; i<T.vertices.length; i++){
+        var a = [];
+        a = T.vertices[i].vertex;
+        if (norm_dis(a, q.parent.vertex) == 0)
+            return i;
+    }
+}
+
     // STENCIL: implement RRT-Connect functions here, such as:
     //   rrt_extend
     //   rrt_connect
