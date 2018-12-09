@@ -240,6 +240,9 @@ function animate() {
             case "RRT-star": 
                 search_result = iterateRRTStar();
                 break;
+            case "Bug0"
+                search_result = iterateBug0();
+                break;
             default: 
                 console.warn('search_canvas: search algorithm not found, using rrt as default');
                 search_result = iterateRRT();
@@ -1079,6 +1082,101 @@ function draw_path_configuration(q) {
     ctx.fillStyle = "red";
     ctx.fillRect(xformWorldViewX(q[0])-3,xformWorldViewY(q[1])-3,6,6);
 }
+
+///////////////////////////////////////////////////////////////////////////
+// BUG0;
+function iterateBug0(){
+    search_result = 'extending';
+    pos_now = bug_init;
+    [bug_init,theta] = heading2goal(bug_init, q_goal);
+    if (bug_init == 'invalid'){
+        bug_init = follow_wall(pos_now,q_goal,theta);
+    }
+    flying_bug(bug_init);
+    if (cal_dis(bug_init, q_goal)<eps){
+        search_iterate = false;
+        search_result = 'succeeded';
+    }
+
+    return search_result;
+}
+function flying_bug(q) {
+    // draw location of 2D configuration on canvas
+    c = document.getElementById("myCanvas");
+    ctx = c.getContext("2d");
+    ctx.fillStyle = "#64b17b";
+    ctx.fillRect(xformWorldViewX(q[0])-3,xformWorldViewY(q[1])-3,6,6);
+}
+
+function heading2goal(start, goal){
+    var x = -start[0] + goal[0];
+    var y = -start[1] + goal[1];
+    var theta = Math.atan2(y, x);
+    var a = start[0] + eps*Math.cos(theta);
+    var b = start[1] + eps*Math.sin(theta);
+    var q_new = [a, b];
+    if (testCollision(q_new))
+        q_new = 'invalid';
+    return [q_new, theta];
+}
+
+function follow_wall(pos, goal, angle){
+    var q_new1=[];
+    var q_new2=[];
+    var q_new=[];
+    if (0<= angle <=Math.PI){
+        q_new1[0] = pos[0];
+        q_new1[1] = pos[1] - eps;
+        if (angle<Math.PI/2){
+            q_new2[0] = pos[0] + eps;
+            q_new2[1] = pos[1];
+        }
+        else{
+            q_new2[0] = pos[0] - eps;
+            q_new2[1] = pos[1];
+        }   
+    }
+    else if (-Math.PI<angle<0){
+        q_new[0] = pos[0];
+        q_new[1] = pos[1] + eps;
+        if (angle<-Math.PI/2){
+            q_new2[0] = pos[0] - eps;
+            q_new2[1] = pos[1];
+        }
+        else{
+            q_new2[0] = pos[0] + eps;
+            q_new2[1] = pos[1];
+        }
+    }
+    if (testCollision(q_new1)&&(!testCollision(q_new2))){
+        q_new = q_new2;
+    }
+    else if (!testCollision(q_new1)&&(testCollision(q_new2))){
+        q_new = q_new1;
+    }
+    else if (!testCollision(q_new1)&&(!testCollision(q_new2))){
+        q_new = comparing(q_new1, q_new2, goal);
+    }
+    
+    if (q_new.length == 0)
+        q_new = 'invalid';
+    return q_new;
+}
+
+function comparing(q1, q2, goal){
+    var q=[];
+    var a1, a2, b1, b2;
+    a1 = Math.pow(q1[0] - goal[0],2);
+    a2 = Math.pow(q1[1] - goal[1],2);
+    b1 = Math.pow(q2[0] - goal[0],2);
+    b2 = Math.pow(q2[1] - goal[1],2);
+    var a = Math.sqrt(a1 + a2);
+    var b = Math.sqrt(b1 + b2);
+    if (a>b){return q2;}
+    else if(a<b){return q1;}
+}
+
+//////////////////////////////////////////////////////////////////////////////
     // STENCIL: implement RRT-Connect functions here, such as:
     //   extendRRT
     //   connectRRT
