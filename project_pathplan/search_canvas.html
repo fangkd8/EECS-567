@@ -660,7 +660,7 @@ function iterateRRTStar() {
         T_a.vertices[T_a.newest].cost = c_min;
 
         new_idx = T_a.newest;
-        T_a = rewire(T_a, nearlist, z_min, new_idx)
+        T_a = rewire(T_a, nearlist, z_min, new_idx);
     }
     if (cal_dis(q_new, q_goal) < eps){
         search_iterate = false;
@@ -1060,7 +1060,7 @@ function rewire(T, list, idx1, idx2){
 
 function find_path(T, q){
     for (var i=0; i<T.vertices.length; i++){
-        if (T.vertices[i].vertex == q){
+        if (cal_dis(T.vertices[i].vertex, q)<eps){
             node = T.vertices[i];
             break;
         }
@@ -1076,7 +1076,7 @@ function draw_path_configuration(q) {
     // draw location of 2D configuration on canvas
     c = document.getElementById("myCanvas");
     ctx = c.getContext("2d");
-    ctx.fillStyle = "#FFFF00";
+    ctx.fillStyle = "red";
     ctx.fillRect(xformWorldViewX(q[0])-3,xformWorldViewY(q[1])-3,6,6);
 }
     // STENCIL: implement RRT-Connect functions here, such as:
