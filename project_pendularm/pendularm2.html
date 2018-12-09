@@ -78,7 +78,7 @@ function init() {
     gravity = 9.81;  // Earth gravity
 
     // initialize pendulum PID servo gains
-    pendulum.servo = {kp:110, kd:25, ki:25};  // no control
+    pendulum.servo = {kp:300, kd:25, ki:70};  // no control
 
     // initialize time and set timestep 
     t = 0;
@@ -91,7 +91,7 @@ function init() {
     //numerical_integrator = "verlet";
     //numerical_integrator = "velocity verlet";
     //numerical_integrator = "runge-kutta";
-
+    target = 0;
     // OPTIONAL servo controller additional features
     steady_state_error_reset = false; // integral term resets after desired met
     servo_error_threshold = 0.001; // threshold for achieving desired
@@ -167,11 +167,14 @@ function animate() {
     //error_pre = [0,0];      
     error_pre[0] = pendulum.desired[0] - pendulum.angle_previous[0];
     error_pre[1] = pendulum.desired[1] - pendulum.angle_previous[1];
-    
-    if (error[0]<0.005 && error[1]<0.005){
-        pendulum.desired[0]=Math.random()*2*Math.PI;
-        pendulum.desired[1]=Math.random()*2*Math.PI;
+    if (servo_active_persist){
+    	if (error[0]<0.01 && error[1]<0.01){
+    		target += 1;
+	        pendulum.desired[0]=Math.random()*2*Math.PI;
+	        pendulum.desired[1]=Math.random()*2*Math.PI;
+	    }	
     }
+    
 
     //console.log(accumulated_error[0]);
     // toggle activation of servo controller from user interaction
@@ -302,7 +305,9 @@ function animate() {
         "<br>" +
         " c|x - toggle servo " +
         "<br>" +
-        " s - disable servo "
+        " s - disable servo " + 
+        "<br>" +
+        "targets acquired " + target
 
     ;
 

@@ -93,7 +93,7 @@ function init() {
     servo_active_state = {}; // string with current state of servo activation
 
 	//STENCIL: for verlet integration, a first step in time is needed
-
+    target_achieved = 0;
     document.addEventListener('keydown', function(e) {
         if (e.keyCode == 88)  // 'x' == 88
            servo_active_persist = !servo_active_persist;
@@ -153,9 +153,13 @@ function animate() {
 	accumulated_error = error + accumulated_error;		
 	error_pre = pendulum.desired - pendulum.angle_previous;
 	pendulum.control = kp*error + ki*accumulated_error*dt + kd*(error-error_pre)/dt;
-    if (error < 0.005){
-        pendulum.desired = Math.random()*2*Math.PI;
+    if (servo_active_persist){
+        if (error < 0.01){
+            pendulum.desired = Math.random()*2*Math.PI;
+            target_achieved += 1;
+        }
     }
+    
     // toggle activation of servo controller from user interaction
     if (keyboard.pressed("c"))
         servo_active_persist = !servo_active_persist;
@@ -276,7 +280,10 @@ function animate() {
         "<br>" +
         " c|x - toggle servo " +
         "<br>" +
-        " s - disable servo "
+        " s - disable servo " +
+        "<br>" +
+        "target_achieved " + target_achieved 
+        //"time consumed" + time
 
     ;
 
