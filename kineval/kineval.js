@@ -71,7 +71,7 @@ kineval.init = function init() {
 
     // initialize rosbridge connection to robot running ROS, if available
     // KE 2 : uncomment and add toggle 
-    //kineval.initrosbridge();
+    kineval.initrosbridge();
 
     // call user's initialization
     my_init();
@@ -278,7 +278,8 @@ kineval.initParameters = function initParameters() {
     kineval.params.trial_ik_random.time = 0.00001;
     kineval.params.trial_ik_random.targets = 0;
     kineval.params.trial_ik_random.distance_current = 0.00001;
-
+    kineval.params.RRT_original = false;
+    kineval.params.RRT_star = false;
 
     // initialize the active joint for user control
     kineval.params.active_link = robot.base;
@@ -377,6 +378,8 @@ kineval.initParameters = function initParameters() {
     kineval.params.update_motion_plan_traversal = false; // sets automatic traversal of previously generated motion plan
     kineval.params.persist_motion_plan_traversal = false; // sets automatic traversal of previously generated motion plan
     kineval.params.planner_state = "not invoked";
+    //kineval.params.RRT-connect = false;
+    //kineval.params.RRT-star = false;
 
     // toggle display of robot links, joints, and axes 
     kineval.params.display_links = true; 
@@ -602,6 +605,8 @@ kineval.initGUIDisplay = function initGUIDisplay () {
     gui_plan.add(dummy_planning_object, 'start_planner');
     gui_plan.add(kineval.params, 'planner_state').listen();
     gui_plan.add(kineval.params, 'persist_motion_plan_traversal');
+    gui_plan.add(kineval.params, 'RRT_original');
+    gui_plan.add(kineval.params, 'RRT_star');
 
     gui_display = gui.addFolder('Display');
 
