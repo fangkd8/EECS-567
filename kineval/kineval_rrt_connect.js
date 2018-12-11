@@ -154,6 +154,7 @@ function robot_rrt_planner_iterate() {
     if (rrt_iterate && (Date.now()-cur_time > 10)) {
         cur_time = Date.now();
         if (rrt_alg == 0){//RRT
+		rrt_iter_count+=1;
             qrand = random_config(q_goal_config);
             ind = find_nearest_neighbor(T_a, qrand);
             q_new = new_config(T_a.vertices[ind], qrand);
@@ -165,6 +166,7 @@ function robot_rrt_planner_iterate() {
 
             if (finish_search(q_new, q_goal_config)){
                 rrt_iterate = false;
+				console.log("iterate number = ",rrt_iter_count);
                 kineval.motion_plan = [];
                 var n = find_nearest_neighbor(T_a, q_goal_config);
                 q_now = T_a.vertices[n];
@@ -184,6 +186,7 @@ function robot_rrt_planner_iterate() {
         }
 
         if (rrt_alg == 1){//RRT-connect
+		rrt_iter_count+=1;
             qrand = random_config(q_goal_config);
             ind = find_nearest_neighbor(T_a, qrand);
             q_new = new_config(T_a.vertices[ind], qrand);
@@ -205,6 +208,7 @@ function robot_rrt_planner_iterate() {
                     }
                     else if (finish_search(q_new1, q_new)){
                         rrt_iterate = false;
+						console.log("iterate number = ",rrt_iter_count);
                         kineval.motion_plan = [];
                         q_now = T_a.vertices[T_a.newest];
                         kineval.motion_plan.unshift(q_now);
@@ -249,6 +253,7 @@ function robot_rrt_planner_iterate() {
                         }
                         else if(finish_search(q_new1, q_new)){
                             rrt_iterate = false;
+							console.log("iterate number = ", rrt_iter_count);
                             kineval.motion_plan = [];
                             q_now = T_a.vertices[T_a.newest];
                             kineval.motion_plan.unshift(q_now);
@@ -275,6 +280,7 @@ function robot_rrt_planner_iterate() {
         }
 
         if (rrt_alg == 2){ //RRT*
+			rrt_iter_count+=1;
             qrand = random_config(q_goal_config);
             ind = find_nearest_neighbor(T_a, qrand);
             q_new = steer(T_a, ind, qrand);
@@ -290,6 +296,7 @@ function robot_rrt_planner_iterate() {
 
             if (finish_search(q_new, q_goal_config)){
                 rrt_iterate=false;
+				console.log("iterate number = ",rrt_iter_count);
                 kineval.motion_plan = [];
                 var n = find_nearest_neighbor(T_a, q_goal_config);
                 q_now = T_a.vertices[n];
@@ -617,7 +624,6 @@ function find_parent_idx(T, q){
     //   normalize_joint_state
     //   find_path
     //   path_dfs
-
 
 
 
