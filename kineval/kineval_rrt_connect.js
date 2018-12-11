@@ -154,6 +154,7 @@ function robot_rrt_planner_iterate() {
     if (rrt_iterate && (Date.now()-cur_time > 10)) {
         cur_time = Date.now();
         if (rrt_alg == 0){//RRT
+            rrt_iter_count+=1;
             qrand = random_config(q_goal_config);
             ind = find_nearest_neighbor(T_a, qrand);
             q_new = new_config(T_a.vertices[ind], qrand);
@@ -185,6 +186,7 @@ function robot_rrt_planner_iterate() {
         }
 
         if (rrt_alg == 1){//RRT-connect
+            rrt_iter_count+=1;
             qrand = random_config(q_goal_config);
             ind = find_nearest_neighbor(T_a, qrand);
             q_new = new_config(T_a.vertices[ind], qrand);
@@ -280,6 +282,7 @@ function robot_rrt_planner_iterate() {
         }
 
         if (rrt_alg == 2){ //RRT*
+            rrt_iter_count+=1;
             qrand = random_config(q_goal_config);
             ind = find_nearest_neighbor(T_a, qrand);
             q_new = steer(T_a, ind, qrand);
