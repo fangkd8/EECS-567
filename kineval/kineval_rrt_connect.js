@@ -414,16 +414,26 @@ function random_config(a){
     var xval = Math.abs(robot_boundary[0][0]-robot_boundary[1][0]);
     var zval = Math.abs(robot_boundary[0][2]-robot_boundary[1][2]);
     var q=[];
-    q[0] = Math.random()*(xval) + robot_boundary[0][0];
+    q[0] = Math.random()*(xval+6) + robot_boundary[0][0]-3;
     q[1] = 0;
-    q[2] = Math.random()*(zval) + robot_boundary[0][2];
+    q[2] = Math.random()*(zval+6) + robot_boundary[0][2]-3;
     for (var i=3; i<q_start_config.length; i++){
         q[i] = Math.random()*2*Math.PI;
     } 
     q[3] = 0;
     q[5] = 0;
+    for (var i=6;i<q_start_config.length; i++){
+        if (typeof(robot.joints[q_index[i]].limit)!== 'undefined'){
+            if (q[i]>robot.joints[q_index[i]].limit.upper){
+                q[i] = robot.joints[q_index[i]].limit.upper;
+            }
+            else if (q[i]<robot.joints[q_index[i]].limit.lower){
+                q[i] = robot.joints[q_index[i]].limit.lower;
+            }
+        }
+    }
     var p = Math.random();
-    if (p <= 0.15){
+    if (p <= 0.08){
         for (var i=0;i<q_start_config.length;i++){
             q[i] = a[i];
         }
