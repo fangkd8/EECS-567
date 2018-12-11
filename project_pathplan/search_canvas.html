@@ -240,9 +240,9 @@ function animate() {
             case "RRT-star": 
                 search_result = iterateRRTStar();
                 break;
-            case "Bug0"
+            /*case "Bug0"
                 search_result = iterateBug0();
-                break;
+                break;*/
             default: 
                 console.warn('search_canvas: search algorithm not found, using rrt as default');
                 search_result = iterateRRT();
@@ -1048,11 +1048,11 @@ function rewire(T, list, idx1, idx2){
 
             var flag_co = false;
 
-            for (var j=0; j<Math.floor(n_n/eps); j++){
+            //for (var j=0; j<Math.floor(n_n/eps); j++){
                 var test = steer(T, idx2, T.vertices[list[i]].vertex);
                 if (test == 'invalid')
                     flag_co = true;
-            }
+            //}
 
             if(!flag_co && ((znewcost + n_n) < znearcost))
                 T = reconnect(T, list[i], idx2);
@@ -1068,11 +1068,15 @@ function find_path(T, q){
             break;
         }
     }
+    var path=[];
+    path.push(node);
     console.log(node);
     while (typeof node.vertex.parent !=='undefined'){
+        path.push(node);
         draw_path_configuration(node.vertex);
         node = node.vertex.parent;
     }
+    drawHighlightedPath(path);
 }
 
 function draw_path_configuration(q) {
@@ -1085,7 +1089,7 @@ function draw_path_configuration(q) {
 
 ///////////////////////////////////////////////////////////////////////////
 // BUG0;
-function iterateBug0(){
+/*function iterateBug0(){
     search_result = 'extending';
     pos_now = bug_init;
     [bug_init,theta] = heading2goal(bug_init, q_goal);
@@ -1099,7 +1103,7 @@ function iterateBug0(){
     }
 
     return search_result;
-}
+}*/
 function flying_bug(q) {
     // draw location of 2D configuration on canvas
     c = document.getElementById("myCanvas");
