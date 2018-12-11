@@ -213,7 +213,7 @@ function robot_rrt_planner_iterate() {
                             q_now = q_now.vertex.parent;
                             kineval.motion_plan.unshift(q_now);
                         }
-                        kineval,motion_plan.unshift(q_now);
+                        kineval.motion_plan.unshift(q_now);
                         kineval.motion_plan.unshift(T_a.vertices[0]);
                         q_now = T_b.vertices[T_b.newest];
                         kineval.motion_plan.push(q_now);
@@ -259,7 +259,7 @@ function robot_rrt_planner_iterate() {
                                 q_now = q_now.vertex.parent;
                                 kineval.motion_plan.unshift(q_now);
                             }
-                            kineval,motion_plan.unshift(q_now);
+                            kineval.motion_plan.unshift(q_now);
                             kineval.motion_plan.unshift(T_a.vertices[0]);
                             q_now = T_b.vertices[T_b.newest];
                             kineval.motion_plan.push(q_now);
