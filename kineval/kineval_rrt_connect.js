@@ -168,14 +168,13 @@ function robot_rrt_planner_iterate() {
                 kineval.motion_plan = [];
                 var n = find_nearest_neighbor(T_a, q_goal_config);
                 q_now = T_a.vertices[n];
-                var flag = 0;
+                kineval.motion_plan.unshift(T_b.vertices[0]);
                 while (!finish_search(q_now.vertex, q_start_config)){
                     kineval.motion_plan.unshift(q_now);
                     q_now = q_now.vertex.parent;
-                    flag += 1;
                 }
-                
-                for (var i=0; i<flag; i++){
+                kineval.motion_plan.unshift(q_now);
+                for (var i=0; i<kineval.motion_plan.length; i++){
                     kineval.motion_plan[i].geom.material.color = {r:0,g:1,b:0};
                 }
 
@@ -212,7 +211,6 @@ function robot_rrt_planner_iterate() {
                         while (!finish_search(q_now.vertex, q_start_config)){
                             q_now = q_now.vertex.parent;
                             kineval.motion_plan.unshift(q_now);
-                            flag += 1;
                         }
                         kineval.motion_plan.unshift(T_a.vertices[0]);
                         q_now = T_b.vertices[T_b.newest];
@@ -295,14 +293,13 @@ function robot_rrt_planner_iterate() {
                 kineval.motion_plan = [];
                 var n = find_nearest_neighbor(T_a, q_goal_config);
                 q_now = T_a.vertices[n];
-                var flag = 0;
+                kineval.motion_plan.unshift(T_b.vertices[0]);
                 while (!finish_search(q_now.vertex, q_start_config)){
                     kineval.motion_plan.unshift(q_now);
                     q_now = q_now.vertex.parent;
-                    flag += 1;
                 }
-                
-                for (var i=0; i<flag; i++){
+                kineval.motion_plan.unshift(q_now);
+                for (var i=0; i<kineval.motion_plan.length; i++){
                     kineval.motion_plan[i].geom.material.color = {r:0,g:0,b:1};
                 }
                 //T_a.vertices[T_a.newest].geom.material.color = {r:0,g:0,b:1};
