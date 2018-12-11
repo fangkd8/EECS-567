@@ -173,7 +173,7 @@ function robot_rrt_planner_iterate() {
                     kineval.motion_plan.unshift(q_now);
                     q_now = q_now.vertex.parent;
                 }
-                kineval.motion_plan.unshift(q_now);
+                kineval.motion_plan.unshift(T_a.vertices[0]);
                 for (var i=0; i<kineval.motion_plan.length; i++){
                     kineval.motion_plan[i].geom.material.color = {r:0,g:1,b:0};
                 }
@@ -298,7 +298,7 @@ function robot_rrt_planner_iterate() {
                     kineval.motion_plan.unshift(q_now);
                     q_now = q_now.vertex.parent;
                 }
-                kineval.motion_plan.unshift(q_now);
+                kineval.motion_plan.unshift(T_a.vertices[0]);
                 for (var i=0; i<kineval.motion_plan.length; i++){
                     kineval.motion_plan[i].geom.material.color = {r:0,g:0,b:1};
                 }
