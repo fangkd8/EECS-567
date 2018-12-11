@@ -451,22 +451,6 @@ function find_nearest_neighbor(tree, q){
 }
 
 function new_config(qnear, qrand){
-    /*
-    var delta_x = [];
-    delta_x[0] = qrand[0] - qnear.vertex[0];
-    delta_x[1] = 0;
-    delta_x[2] = qrand[2] - qnear.vertex[2]; 
-    var theta = Math.atan2(delta_x[2],delta_x[0]);
-    var q_new = [];
-    q_new[0] = qnear.vertex[0] + eps_p*Math.cos(theta);
-    q_new[1] = 0;
-    q_new[2] = qnear.vertex[2] + eps_p*Math.sin(theta);
-    q_new[3] = 0;
-    q_new[4] = qnear.vertex[4] + eps_a*(qrand[4] - qnear.vertex[4]);
-    q_new[5] = 0;
-    for (var i=6; i<qrand.length; i++){
-        q_new[i] = qnear.vertex[i] + eps_a*(qrand[i] - qnear.vertex[i]);
-    }*/
     var delta_x = [];
     for (var i=0; i<qrand.length; i++){
         delta_x[i] = qrand[i] - qnear.vertex[i];
@@ -476,7 +460,16 @@ function new_config(qnear, qrand){
     for (var i=0; i<qrand.length; i++){
         q_new[i] = qnear.vertex[i] + eps_p*delta_x[i];
     }
-
+    for (var i=6; i<qrand.length; i++){
+        if (typeof(robot.joints[q_index[i]].limit)!== 'undefined'){
+            if (q_new[i]>robot.joints[q_index[i]].limit.upper){
+                q_new[i] = robot.joints[q_index[i]].limit.upper;
+            }
+            else if (q_new[i]<robot.joints[q_index[i]].limit.lower){
+                q_new[i] = robot.joints[q_index[i]].limit.lower;
+            }
+        }
+    }
     q_new.parent = qnear;
     return q_new;
 }
