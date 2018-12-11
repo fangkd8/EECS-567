@@ -126,8 +126,8 @@ kineval.robotRRTPlannerInit = function robot_rrt_planner_init() {
     // make sure the rrt iterations are not running faster than animation update
     cur_time = Date.now();
 
-    eps_p = 0.3;
-    eps_a = 0.15;
+    eps_p = 0.7;
+    eps_a = 0.7;
 
     T_a = tree_init(q_start_config);
     T_b = tree_init(q_goal_config);
@@ -140,7 +140,16 @@ kineval.robotRRTPlannerInit = function robot_rrt_planner_init() {
 function robot_rrt_planner_iterate() {
 
     var i;
-    rrt_alg = 0;  // 0: basic rrt (OPTIONAL), 1: rrt_connect (REQUIRED), 2: rrt-star;
+    if ((!kineval.params.RRT_original)&&(!kineval.params.RRT_star)){
+        rrt_alg = 1;
+    }
+    else if (kineval.params.RRT_original){
+        rrt_alg = 0;
+    }
+    else if (kineval.params.RRT_star){
+        rrt_alg = 2;  
+    }
+  // 0: basic rrt (OPTIONAL), 1: rrt_connect (REQUIRED), 2: rrt-star;
 
     if (rrt_iterate && (Date.now()-cur_time > 10)) {
         cur_time = Date.now();
@@ -405,9 +414,9 @@ function random_config(a){
     var xval = Math.abs(robot_boundary[0][0]-robot_boundary[1][0]);
     var zval = Math.abs(robot_boundary[0][2]-robot_boundary[1][2]);
     var q=[];
-    q[0] = Math.random()*(xval+1) + robot_boundary[0][0];
+    q[0] = Math.random()*(xval) + robot_boundary[0][0];
     q[1] = 0;
-    q[2] = Math.random()*(zval+1) + robot_boundary[0][2];
+    q[2] = Math.random()*(zval) + robot_boundary[0][2];
     for (var i=3; i<q_start_config.length; i++){
         q[i] = Math.random()*2*Math.PI;
     } 
@@ -442,6 +451,7 @@ function find_nearest_neighbor(tree, q){
 }
 
 function new_config(qnear, qrand){
+    /*
     var delta_x = [];
     delta_x[0] = qrand[0] - qnear.vertex[0];
     delta_x[1] = 0;
@@ -456,7 +466,17 @@ function new_config(qnear, qrand){
     q_new[5] = 0;
     for (var i=6; i<qrand.length; i++){
         q_new[i] = qnear.vertex[i] + eps_a*(qrand[i] - qnear.vertex[i]);
+    }*/
+    var delta_x = [];
+    for (var i=0; i<qrand.length; i++){
+        delta_x[i] = qrand[i] - qnear.vertex[i];
     }
+    delta_x = vector_normalize(delta_x);
+    var q_new = [];
+    for (var i=0; i<qrand.length; i++){
+        q_new[i] = qnear.vertex[i] + eps_p*delta_x[i];
+    }
+
     q_new.parent = qnear;
     return q_new;
 }
@@ -471,7 +491,7 @@ function finish_search(A, B){
     }
     for (i=4; i < q_start_config.length; i++){
         if(i==5) {continue;};
-        if(Math.abs(b[i]-a[i])>eps_a){
+        if(Math.abs(B[i]-A[i])>eps_a){
             return false;
         }
     }
@@ -540,11 +560,11 @@ function rewire(T, list, idx1, idx2){
 
             var flag_co = false;
 
-            for (var j=0; j<Math.floor(n_n/eps_p); j++){
+            //for (var j=0; j<Math.floor(n_n/eps_p); j++){
                 var test = steer(T, idx2, T.vertices[list[i]].vertex);
                 if (test == 'invalid')
                     flag_co = true;
-            }
+            //}
 
             if(!flag_co && ((znewcost + n_n) < znearcost))
                 T = reconnect(T, list[i], idx2);
