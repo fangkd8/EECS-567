@@ -54,29 +54,31 @@ Assignment 5 feature 24 (0.00/6): IK_Jacobian: DUE
     error: incorrect Jacobian for tested configurations
 Assignment 5 feature 25 (0.00/3): IK_JTranspose: DUE
     error: endeffector does not converge to target for all tests
-    warning: endeffector does not monotonicallly decrease error to local minimum
+    warning: endeffector does not monotonically decrease error to local minimum
 Assignment 5 feature 26 (0.00/3): IK_JPseudoinverse: DUE
     error: endeffector does not converge to target for all tests
-    warning: endeffector does not monotonicallly decrease error to local minimum
+    warning: endeffector does not monotonically decrease error to local minimum
 Assignment 5 feature 27 (0.00/6): IK_EulerAngles: DUE
     error: endeffector does not converge to target for all tests
     warning: target endeffector orientation incorrectly transformed
-Assignment 6 feature 28 (0.00/4): MotionPlan_Collision: PENDING
+Assignment 6 feature 28 (4.00/4): MotionPlan_Collision: CHECK
+    comment: good work
+Assignment 6 feature 29 (2.00/2): MotionPlan_2DRRTConnect: CHECK
+    comment: good work
+Assignment 6 feature 30 (6.00/6): MotionPlan_CSpaceRRTConnect: CHECK
+    comment: good work
+Assignment 6 feature 31 (6.00/6): MotionPlan_RRTStar: CHECK
+    comment: good work
+Assignment 7 feature 32 (12.00/12): Pitch: CHECK
     
-Assignment 6 feature 29 (0.00/2): MotionPlan_2DRRTConnect: PENDING
-    
-Assignment 6 feature 30 (0.00/6): MotionPlan_CSpaceRRTConnect: PENDING
-    
-Assignment 6 feature 31 (0.00/6): MotionPlan_RRTStar: PENDING
-    
-Assignment 7 feature 32 (0.00/12): Pitch: PENDING
-    
-Assignment 7 feature 33 (0.00/6): Pitch_Advanced: PENDING
+Assignment 7 feature 33 (6.00/6): Pitch_Advanced: CHECK
     
 Assignment 8 feature 34 (0.00/4): Advanced: PENDING
-    pendularm_random,lu,luik
+    Pendularm_RandomTrial: PENDING
+    FK_LU: PENDING
+    IK_LU: PENDING
 Quiz 1: 2.42 of 4
 Quiz 2: 4.00 of 4
 Quiz 3: 3.00 of 4
 Quiz 4: 2.83 of 4
-Quiz 5: PENDING
+Quiz 5: 3.67 of 4
