@@ -72,10 +72,12 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
     orientation = get_euler_angle(endeffector_joint);
     target = [];//6-dim vector in delta_x calculation.
     pos = [];//6-dim
+    target_1 = [];
     if (!kineval.params.ik_orientation_included){
         for(var i=0; i<3; i++){
             target[i] = endeffector_target_world.position[i][0];
             pos[i] = end_p[i][0];
+            target_1[i] = endeffector_target_world.position[i][0];
         }
         for(var i=3; i<6; i++){
             target[i] = 0;
@@ -92,32 +94,64 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
             pos[i] = orientation[i-3];
         }
     }
+
+    end_pp = end_p; var trash = end_pp.pop();
+    if (!kineval.params.ik_orientation_included)
+        delta_x1 = vector_minus(target_1, end_pp); delta_x1 = matrix_transpose(delta_x1);
+    
     delta_x = vector_minus(target, pos); delta_x = matrix_transpose(delta_x);
 
     J = jacobian_matrix(chain, pos);
+    J1 = Jacobian_3_matrix(chain, pos);
+    //J1 is 3-N matrix.
 
-    if (!kineval.params.ik_pseudoinverse) inv_J = matrix_transpose(J);
-    else if (kineval.params.ik_pseudoinverse){
-        if (J.length >= J[0].length){
-            JT = matrix_transpose(J);
-            inv_J = matrix_multiply(JT, J);
-            //inv_J = numeric.inv(inv_J);
-            inv_J = matrix_inverse(inv_J);
-            inv_J = matrix_multiply(inv_J, JT);
-        }
-        else if (J.length < J[0].length){
-            JT = matrix_transpose(J);
-            inv_J = matrix_multiply(J, JT);
-            //inv_J = numeric.inv(inv_J);
-            inv_J = matrix_inverse(inv_J);
-            inv_J = matrix_multiply(JT, inv_J);
-        }
+    if ((!kineval.params.ik_orientation_included)&&(kineval.params.ik_pseudoinverse)){
+        if (!kineval.params.ik_pseudoinverse) inv_J = matrix_transpose(J1);
+        else if (kineval.params.ik_pseudoinverse){
+            if (J1.length >= J1[0].length){
+                JT1 = matrix_transpose(J1);
+                inv_J = matrix_multiply(JT1, J1);
+                //inv_J = numeric.inv(inv_J);
+                inv_J = matrix_inverse(inv_J);
+                inv_J = matrix_multiply(inv_J, JT1);
+            }
+            else if (J1.length < J1[0].length){
+                JT1 = matrix_transpose(J1);
+                inv_J = matrix_multiply(J1, JT1);
+                //inv_J = numeric.inv(inv_J);
+                inv_J = matrix_inverse(inv_J);
+                inv_J = matrix_multiply(JT1, inv_J);
+            }
+        } 
+        q = matrix_multiply(inv_J, delta_x1);  
+    }
+    else if ((!kineval.params.ik_orientation_included)&&(!kineval.params.ik_pseudoinverse)){
+        inv_J = matrix_transpose(J);
+        q = matrix_multiply(inv_J, delta_x);
+    }
+    else if (kineval.params.ik_orientation_included){
+        if (!kineval.params.ik_pseudoinverse) inv_J = matrix_transpose(J);
+        else if (kineval.params.ik_pseudoinverse){
+            if (J.length >= J[0].length){
+                JT = matrix_transpose(J);
+                inv_J = matrix_multiply(JT, J);
+                //inv_J = numeric.inv(inv_J);
+                inv_J = matrix_inverse(inv_J);
+                inv_J = matrix_multiply(inv_J, JT);
+            }
+            else if (J.length < J[0].length){
+                JT = matrix_transpose(J);
+                inv_J = matrix_multiply(J, JT);
+                //inv_J = numeric.inv(inv_J);
+                inv_J = matrix_inverse(inv_J);
+                inv_J = matrix_multiply(JT, inv_J);
+            }
+        } 
+        q = matrix_multiply(inv_J, delta_x);
     }
 
-    q = matrix_multiply(inv_J, delta_x);
-
     for (var i=0; i<chain.length; i++){
-        robot.joints[chain[i]].control = kineval.params.ik_steplength*q[i][0];
+        robot.joints[chain[i]].control += kineval.params.ik_steplength*q[i][0];
     }
 
     // STENCIL: implement inverse kinematics iteration
@@ -208,6 +242,36 @@ function jacobian_matrix(chain, pos){
             J[3][i] = k[0];
             J[4][i] = k[1];
             J[5][i] = k[2];
+        }
+    }
+    return J;
+}
+
+function Jacobian_3_matrix(chain, pos){
+    var J = [[],[],[]];
+    for (var i=0; i<chain.length; i++){
+        // joint to world frame;
+        var joint_world = [];
+        joint_world = matrix_multiply(robot.joints[chain[i]].xform, [[0],[0],[0],[1]]);
+        // axis in world
+        var axis = axis_position(chain[i]);
+        var end = [
+        [pos[0] - joint_world[0][0]],
+        [pos[1] - joint_world[1][0]],
+        [pos[2] - joint_world[2][0]],
+        ];
+        var k0 = [joint_world[0],joint_world[1],joint_world[2]];
+        var k = vector_minus(axis, k0);
+        if (robot.joints[chain[i]].type == 'prismatic'){
+            J[0][i] = k[0];
+            J[1][i] = k[1];
+            J[2][i] = k[2];
+        }
+        else{
+            var v1 = vector_cross(k,end);
+            J[0][i] = v1[0];
+            J[1][i] = v1[1];
+            J[2][i] = v1[2];
         }
     }
     return J;
