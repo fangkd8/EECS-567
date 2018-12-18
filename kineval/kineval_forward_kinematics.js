@@ -74,9 +74,10 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
                     robot.joints[x].q = quaternion_from_axisangle(robot,x);
                     robot.joints[x].mat = quaternion_to_rotation_matrix(robot.joints[x].q);                
                     robot.joints[x].xform = matrix_multiply(base.xform,traverseFKJoint(x,onset_xform));
+                    robot.joints[x].xform = matrix_multiply(robot.joints[x].xform, robot.joints[x].mat);
                     child = robot.joints[x].child;
                     traverseFKLink(robot.links[child],robot.joints[x]);
-                    robot.links[child].xform = matrix_multiply(robot.links[child].xform,robot.joints[x].mat);
+                    //robot.links[child].xform = matrix_multiply(robot.links[child].xform,robot.joints[x].mat);
                     rlinks.push(robot.links[child]);
                 }
             }
@@ -92,8 +93,9 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
                     robot.joints[nam].q = quaternion_from_axisangle(robot,nam);
                     chi = robot.joints[nam].child;
                     robot.joints[nam].mat = quaternion_to_rotation_matrix(robot.joints[nam].q);
+                    robot.joints[nam].xform = matrix_multiply(robot.joints[nam].xform, robot.joints[nam].mat);
                     traverseFKLink(robot.links[chi],robot.joints[nam]);
-                    robot.links[chi].xform = matrix_multiply(robot.links[chi].xform,robot.joints[nam].mat);
+                    //robot.links[chi].xform = matrix_multiply(robot.links[chi].xform,robot.joints[nam].mat);
                     rlinks.push(robot.links[chi]);
                 }
             }
@@ -106,11 +108,12 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
                 if (robot.joints[x].name == base.children[i]){
                     robot.joints[x].xform = matrix_multiply(base.xform,traverseFKJoint(x,onset_xform));
                     child = robot.joints[x].child;
-                    traverseFKLink(robot.links[child],robot.joints[x]);
+                    //traverseFKLink(robot.links[child],robot.joints[x]);
                     if (robot.joints[x].type == 'revolute'||robot.joints[x].type == 'continuous'){
                         robot.joints[x].q = quaternion_from_axisangle(robot,x);
                         robot.joints[x].mat = quaternion_to_rotation_matrix(robot.joints[x].q);
-                        robot.links[child].xform = matrix_multiply(robot.links[child].xform,robot.joints[x].mat); 
+                        robot.joints[x].xform = matrix_multiply(robot.joints[x].xform, robot.joints[x].mat);
+                        //robot.links[child].xform = matrix_multiply(robot.links[child].xform,robot.joints[x].mat); 
                     }
                     else if (robot.joints[x].type == 'prismatic'){
                         var t=[];
@@ -122,9 +125,11 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
                         }
                         t = vector_multi(robot.joints[x].angle,robot.joints[x].axis);
                         var mt =[];
-                        mt = generate_translation_matrix(t[0],t[1],t[2]);
-                        robot.links[child].xform = matrix_multiply(robot.links[child].xform,mt);
-                    }              
+                        robot.joints[x].mat = generate_translation_matrix(t[0],t[1],t[2]);
+                        robot.joints[x].xform = matrix_multiply(robot.joints[x].xform, robot.joints[x].mat);
+                        //robot.links[child].xform = matrix_multiply(robot.links[child].xform,mt);
+                    } 
+                    traverseFKLink(robot.links[child],robot.joints[x]);             
                     rlinks.push(robot.links[child]);
                 }
             }
@@ -138,11 +143,12 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
                     parent = rlinks[i].name;
                     robot.joints[nam].xform = matrix_multiply(robot.links[parent].xform,traverseFKJoint(nam,onset_xform)); 
                     chi = robot.joints[nam].child;
-                    traverseFKLink(robot.links[chi],robot.joints[nam]);
+                    //traverseFKLink(robot.links[chi],robot.joints[nam]);
                     if (robot.joints[nam].type == 'revolute'||robot.joints[nam].type == 'continuous'){
                         robot.joints[nam].q = quaternion_from_axisangle(robot,nam);
                         robot.joints[nam].mat = quaternion_to_rotation_matrix(robot.joints[nam].q);
-                        robot.links[chi].xform = matrix_multiply(robot.links[chi].xform,robot.joints[nam].mat);
+                        robot.joints[nam].xform = matrix_multiply(robot.joints[nam].xform, robot.joints[nam].mat);
+                        //robot.links[chi].xform = matrix_multiply(robot.links[chi].xform,robot.joints[nam].mat);
                     }
                     else if (robot.joints[nam].type == 'prismatic'){
                         var t=[];
@@ -154,9 +160,11 @@ kineval.robotForwardKinematics = function robotForwardKinematics () {
                         }
                         t = vector_multi(robot.joints[nam].angle,robot.joints[nam].axis);
                         var mt =[];
-                        mt = generate_translation_matrix(t[0],t[1],t[2]);
-                        robot.links[chi].xform = matrix_multiply(robot.links[chi].xform,mt);
+                        robot.joints[nam].mat = generate_translation_matrix(t[0],t[1],t[2]);
+                        robot.joints[nam].xform = matrix_multiply(robot.joints[nam].xform, robot.joints[nam].mat);
+                        //robot.links[chi].xform = matrix_multiply(robot.links[chi].xform,mt);
                     }
+                    traverseFKLink(robot.links[chi],robot.joints[nam]);
                     rlinks.push(robot.links[chi]);
                 }
             }

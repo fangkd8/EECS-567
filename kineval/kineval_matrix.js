@@ -83,6 +83,7 @@ function matrix_inverse(a){
             }
         }
     }
+    //console.log(low, up);
     //invup is the inverse of U, invlo is the inverse of L.
     var invup = [];
     var invlo = [];
@@ -113,6 +114,7 @@ function matrix_inverse(a){
             }
         }
     }
+    //console.log(invup, invlo);
     var m1=[];
     m1 = matrix_multiply(invup,invlo);
     return m1;
@@ -145,15 +147,19 @@ function matrix_pseudoinverse(A){
     N = A.length;
     M = A[0].length;
     trans = matrix_transpose(A);
-    if (N > M){
-        mat = matrix_multiply(trans,A);
-        mat = matrix_inverse(mat);
-        mat = matrix_multiply(mat,trans);
+    if (N == M){
+        mat = numeric.inv(A);
+        //mat = matrix_inverse(A);
     }
-    else if(N < M){
-        mat = matrix_multiply(A,trans);
-        mat = matrix_inverse(mat);
-        mat = matrix_multiply(trans,mat);
+    else if (M < N){
+        mat = matrix_multiply(trans, A);
+        mat = matrix_multiply(numeric.inv(mat), trans);
+        //mat = matrix_multiply(matrix_inverse(mat), trans);
+    }
+    else{
+        mat = matrix_multiply(A, trans);
+        mat = matrix_multiply(trans, numeric.inv(mat));
+        //mat = matrix_multiply(trans, matrix_inverse(mat))
     }
     return mat;
 }
