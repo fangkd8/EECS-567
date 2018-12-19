@@ -370,6 +370,10 @@ kineval.initParameters = function initParameters() {
     kineval.params.ik_steplength = 0.5;
     kineval.params.ik_pseudoinverse = false;
 
+    //Damping.
+    kineval.params.pseudo_damping = false;
+    kineval.params.ik_lambda = 0.1;
+
     // initialize flags for executing planner
     kineval.params.generating_motion_plan = false; // monitor specifying state of motion plan generation
     kineval.params.update_motion_plan = false; // sets request to generate motion plan 
@@ -589,6 +593,8 @@ kineval.initGUIDisplay = function initGUIDisplay () {
     gui_ik.add(kineval.params, 'persist_ik').listen();
     gui_ik.add(kineval.params, 'ik_steplength', 0, 1).listen();
     gui_ik.add(kineval.params, 'ik_pseudoinverse').listen();
+    gui_ik.add(kineval.params, 'pseudo_damping').listen();
+    gui_ik.add(kineval.params, 'ik_lambda', 0, 1).listen();
     gui_ik.add(kineval.params, 'ik_orientation_included').listen();
     // KE 2 : gui dat not configured for arrays
     // gui_ik.add(kineval.params.ik_target, '[0]').listen();

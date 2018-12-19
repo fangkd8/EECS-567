@@ -153,13 +153,11 @@ function matrix_pseudoinverse(A){
     }
     else if (M < N){
         mat = matrix_multiply(trans, A);
-        mat = matrix_multiply(numeric.inv(mat), trans);
-        //mat = matrix_multiply(matrix_inverse(mat), trans);
+        mat = matrix_multiply(matrix_inverse(mat), trans);
     }
     else{
         mat = matrix_multiply(A, trans);
-        mat = matrix_multiply(trans, numeric.inv(mat));
-        //mat = matrix_multiply(trans, matrix_inverse(mat))
+        mat = matrix_multiply(trans, matrix_inverse(mat))
     }
     return mat;
 }

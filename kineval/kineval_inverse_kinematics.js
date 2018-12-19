@@ -62,11 +62,16 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
     var idx = endeffector_joint;
     i=0;
     while (robot.joints[idx].parent != base.name){
-        chain.unshift(idx);
+    	if (robot.joints[idx].type != 'fixed'){
+    		chain.unshift(idx);
+    	}
         var prc = robot.joints[idx].parent;
         idx = robot.links[prc].parent
     }
-    chain.unshift(idx);
+    if (robot.joints[idx].type != 'fixed'){
+    	chain.unshift(idx);
+    }
+    
 
     end_p = matrix_multiply(robot.joints[endeffector_joint].xform,endeffector_position_local);
     orientation = get_euler_angle(endeffector_joint);
@@ -104,49 +109,38 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
     J = jacobian_matrix(chain, pos);
     J1 = Jacobian_3_matrix(chain, pos);
     //J1 is 3-N matrix.
-
+    if (!kineval.params.ik_orientation_included){
+    	if ((!kineval.params.ik_pseudoinverse)&&(!kineval.params.pseudo_damping)){
+    		inv_J = matrix_transpose(J);
+        	q = matrix_multiply(inv_J, delta_x);
+    	}
+    	else if (kineval.params.ik_pseudoinverse){
+    		inv_J = matrix_pseudoinverse(J1);
+        	q = matrix_multiply(inv_J, delta_x1);
+    	}
+    	else if (kineval.params.pseudo_damping){
+    		inv_J = damped_pseudo(J, kineval.params.ik_lambda);
+    		q = matrix_multiply(inv_J, delta_x);
+    	}
+    }
+    /*
     if ((!kineval.params.ik_orientation_included)&&(kineval.params.ik_pseudoinverse)){
-        if (!kineval.params.ik_pseudoinverse) inv_J = matrix_transpose(J1);
-        else if (kineval.params.ik_pseudoinverse){
-            if (J1.length >= J1[0].length){
-                JT1 = matrix_transpose(J1);
-                inv_J = matrix_multiply(JT1, J1);
-                //inv_J = numeric.inv(inv_J);
-                inv_J = matrix_inverse(inv_J);
-                inv_J = matrix_multiply(inv_J, JT1);
-            }
-            else if (J1.length < J1[0].length){
-                JT1 = matrix_transpose(J1);
-                inv_J = matrix_multiply(J1, JT1);
-                //inv_J = numeric.inv(inv_J);
-                inv_J = matrix_inverse(inv_J);
-                inv_J = matrix_multiply(JT1, inv_J);
-            }
-        } 
+        inv_J = matrix_pseudoinverse(J1);
         q = matrix_multiply(inv_J, delta_x1);  
     }
+
     else if ((!kineval.params.ik_orientation_included)&&(!kineval.params.ik_pseudoinverse)){
         inv_J = matrix_transpose(J);
         q = matrix_multiply(inv_J, delta_x);
-    }
+    }*/
+
     else if (kineval.params.ik_orientation_included){
         if (!kineval.params.ik_pseudoinverse) inv_J = matrix_transpose(J);
-        else if (kineval.params.ik_pseudoinverse){
-            if (J.length >= J[0].length){
-                JT = matrix_transpose(J);
-                inv_J = matrix_multiply(JT, J);
-                //inv_J = numeric.inv(inv_J);
-                inv_J = matrix_inverse(inv_J);
-                inv_J = matrix_multiply(inv_J, JT);
-            }
-            else if (J.length < J[0].length){
-                JT = matrix_transpose(J);
-                inv_J = matrix_multiply(J, JT);
-                //inv_J = numeric.inv(inv_J);
-                inv_J = matrix_inverse(inv_J);
-                inv_J = matrix_multiply(JT, inv_J);
-            }
-        } 
+
+        else if (kineval.params.pseudo_damping) inv_J = damped_pseudo(J, kineval.params.ik_lambda);
+
+        else if (kineval.params.ik_pseudoinverse) inv_J = matrix_pseudoinverse(J);
+
         q = matrix_multiply(inv_J, delta_x);
     }
 
@@ -234,6 +228,7 @@ function jacobian_matrix(chain, pos){
             J[4][i] = 0;
             J[5][i] = 0;
         }
+        
         else{
             var v1 = vector_cross(k,end);
             J[0][i] = v1[0];
@@ -275,4 +270,24 @@ function Jacobian_3_matrix(chain, pos){
         }
     }
     return J;
+}
+
+function damped_pseudo(A, damping){
+	var dp = [];
+	var A_T = matrix_transpose(A);
+	if (A.length < A[0].length){
+		dp = matrix_multiply(A, A_T);
+		for (var i=0; i<dp.length; i++){
+			dp[i][i] += Math.pow(damping, 2);
+		}
+		dp = matrix_multiply(A_T, matrix_inverse(A))
+	}
+	else if (A.length > A[0].length){
+		dp = matrix_multiply(A_T, A);
+		for (var i=0; i<dp.length; i++){
+			dp[i][i] += Math.pow(damping, 2);
+		}
+		dp = matrix_multiply(matrix_inverse(dp), A_T);
+	}
+	return dp;
 }
