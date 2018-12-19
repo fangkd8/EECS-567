@@ -117,8 +117,15 @@ kineval.robotRRTPlannerInit = function robot_rrt_planner_init() {
     // set goal configuration as the zero configuration
     var i; 
     q_goal_config = new Array(q_start_config.length);
-    for (i=0;i<q_goal_config.length;i++) q_goal_config[i] = 0;
-
+    if (!kineval.params.random_target){
+        for (i=0;i<q_goal_config.length;i++) q_goal_config[i] = 0;
+    }
+    else if (kineval.params.random_target){
+        q_goal_config = random_config(q_start_config);
+        while (kineval.poseIsCollision(q_goal_config)){
+            q_goal_config = random_config(q_start_config);
+        }
+    }
     // flag to continue rrt iterations
     rrt_iterate = true;
     rrt_iter_count = 0;
@@ -174,7 +181,7 @@ function robot_rrt_planner_iterate() {
                     kineval.motion_plan.unshift(q_now);
                     q_now = q_now.vertex.parent;
                 }
-                kineval.motion_plan.unshift(q_now);
+                kineval.motion_plan.unshift(q_now.vertex.parent);
                 kineval.motion_plan.unshift(T_a.vertices[0]);
                 for (var i=0; i<kineval.motion_plan.length; i++){
                     kineval.motion_plan[i].geom.material.color = {r:0,g:1,b:0};
@@ -215,7 +222,7 @@ function robot_rrt_planner_iterate() {
                             q_now = q_now.vertex.parent;
                             kineval.motion_plan.unshift(q_now);
                         }
-                        kineval.motion_plan.unshift(q_now);
+                        kineval.motion_plan.unshift(q_now.vertex.parent);
                         kineval.motion_plan.unshift(T_a.vertices[0]);
                         q_now = T_b.vertices[T_b.newest];
                         kineval.motion_plan.push(q_now);
@@ -261,7 +268,7 @@ function robot_rrt_planner_iterate() {
                                 q_now = q_now.vertex.parent;
                                 kineval.motion_plan.unshift(q_now);
                             }
-                            kineval.motion_plan.unshift(q_now);
+                            kineval.motion_plan.unshift(q_now.vertex.parent);
                             kineval.motion_plan.unshift(T_a.vertices[0]);
                             q_now = T_b.vertices[T_b.newest];
                             kineval.motion_plan.push(q_now);
@@ -306,7 +313,7 @@ function robot_rrt_planner_iterate() {
                     kineval.motion_plan.unshift(q_now);
                     q_now = q_now.vertex.parent;
                 }
-                kineval.motion_plan.unshift(q_now);
+                kineval.motion_plan.unshift(q_now.vertex.parent);
                 kineval.motion_plan.unshift(T_a.vertices[0]);
                 for (var i=0; i<kineval.motion_plan.length; i++){
                     kineval.motion_plan[i].geom.material.color = {r:0,g:0,b:1};

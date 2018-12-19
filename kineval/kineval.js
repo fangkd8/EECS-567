@@ -382,6 +382,7 @@ kineval.initParameters = function initParameters() {
     kineval.params.update_motion_plan_traversal = false; // sets automatic traversal of previously generated motion plan
     kineval.params.persist_motion_plan_traversal = false; // sets automatic traversal of previously generated motion plan
     kineval.params.planner_state = "not invoked";
+    kineval.params.random_target = false;
     //kineval.params.RRT-connect = false;
     //kineval.params.RRT-star = false;
 
@@ -608,7 +609,9 @@ kineval.initGUIDisplay = function initGUIDisplay () {
     gui_plan = gui.addFolder('Motion Planning');
     var dummy_planning_object = {};
     dummy_planning_object.start_planner = function() {kineval.params.update_motion_plan = true; console.log("start planning")};
+    dummy_planning_object.random_target = function() {kineval.params.random_target = true;};   
     gui_plan.add(dummy_planning_object, 'start_planner');
+    gui_plan.add(dummy_planning_object, 'random_target');
     gui_plan.add(kineval.params, 'planner_state').listen();
     gui_plan.add(kineval.params, 'persist_motion_plan_traversal');
     gui_plan.add(kineval.params, 'RRT_original');
