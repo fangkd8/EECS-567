@@ -101,8 +101,10 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
     }
 
     end_pp = end_p; var trash = end_pp.pop();
-    if (!kineval.params.ik_orientation_included)
-        delta_x1 = vector_minus(target_1, end_pp); delta_x1 = matrix_transpose(delta_x1);
+    if (!kineval.params.ik_orientation_included){
+        delta_x1 = vector_minus(target_1, end_pp); 
+        delta_x1 = matrix_transpose(delta_x1);
+    }
     
     delta_x = vector_minus(target, pos); delta_x = matrix_transpose(delta_x);
 
@@ -115,8 +117,11 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
         	q = matrix_multiply(inv_J, delta_x);
     	}
     	else if (kineval.params.ik_pseudoinverse){
+            inv_J = damped_pseudo(J, 0);
+            q = matrix_multiply(inv_J, delta_x);
+            /*
     		inv_J = matrix_pseudoinverse(J1);
-        	q = matrix_multiply(inv_J, delta_x1);
+        	q = matrix_multiply(inv_J, delta_x1);*/
     	}
     	else if (kineval.params.pseudo_damping){
     		inv_J = damped_pseudo(J, kineval.params.ik_lambda);

@@ -91,7 +91,8 @@ function traverse_collision_forward_kinematics_link(link,mstack,q) {
 /*
     mstack_inv = matrix_invert_affine(mstack);
 */
-    mstack_inv = numeric.inv(mstack);
+    mstack_inv = matrix_inverse(mstack);
+    //mstack_inv = numeric.inv(mstack);
 
     var i;
     var j;
