@@ -288,14 +288,14 @@ function damped_pseudo(A, damping){
 		for (var i=0; i<dp.length; i++){
 			dp[i][i] += Math.pow(damping, 2);
 		}
-		dp = matrix_multiply(A_T, matrix_inverse(dp))
+		dp = matrix_multiply(A_T, numeric.inv(dp))
 	}
 	else if (A.length > A[0].length){
 		dp = matrix_multiply(A_T, A);
 		for (var i=0; i<dp.length; i++){
 			dp[i][i] += Math.pow(damping, 2);
 		}
-		dp = matrix_multiply(matrix_inverse(dp), A_T);
+		dp = matrix_multiply(numeric.inv(dp), A_T);
 	}
 	return dp;
 }
