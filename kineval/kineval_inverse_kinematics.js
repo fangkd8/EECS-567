@@ -117,11 +117,14 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
         	q = matrix_multiply(inv_J, delta_x);
     	}
     	else if (kineval.params.ik_pseudoinverse){
-            inv_J = damped_pseudo(J, 0);
-            q = matrix_multiply(inv_J, delta_x);
-            /*
-    		inv_J = matrix_pseudoinverse(J1);
-        	q = matrix_multiply(inv_J, delta_x1);*/
+            if (robot.links_geom_imported == undefined){
+                inv_J = damped_pseudo(J, 0);
+                q = matrix_multiply(inv_J, delta_x); 
+            }
+            else {
+                inv_J = matrix_pseudoinverse(J1);
+                q = matrix_multiply(inv_J, delta_x1);    
+            }
     	}
     	else if (kineval.params.pseudo_damping){
     		inv_J = damped_pseudo(J, kineval.params.ik_lambda);
@@ -150,7 +153,7 @@ kineval.iterateIK = function iterate_inverse_kinematics(endeffector_target_world
     }
 
     for (var i=0; i<chain.length; i++){
-        robot.joints[chain[i]].control += kineval.params.ik_steplength*q[i][0];
+        robot.joints[chain[i]].control = kineval.params.ik_steplength*q[i][0];
     }
 
     // STENCIL: implement inverse kinematics iteration
