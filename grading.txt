@@ -29,8 +29,9 @@ Assignment 3 feature 12 (2.00/2): FK_MatrixRoutines: CHECK
     comment: good work
 Assignment 3 feature 13 (8.00/8): FK_Transforms: CHECK
     comment: good work
-Assignment 3 feature 14 (0.00/2): FK_JointRendering: DUE
+Assignment 3 feature 14 (1.60/2): FK_JointRendering: PERCENT 80
     error: traversing extents of kinematics causes joint selector to become undefined
+    regrade: working
 Assignment 3 feature 15 (2.00/2): FK_BaseOffset: CHECK
     comment: good work
 Assignment 3 feature 16 (3.20/4): FK_NewRobot: PERCENT 80
@@ -50,17 +51,21 @@ Assignment 4 feature 22 (2.00/2): FSMDance_Prismatic: CHECK
     comment: good work
 Assignment 4 feature 23 (2.00/2): FSMDance_Rosbridge: CHECK
     
-Assignment 5 feature 24 (0.00/6): IK_Jacobian: DUE
+Assignment 5 feature 24 (4.80/6): IK_Jacobian: PERCENT 80
     error: incorrect Jacobian for tested configurations
-Assignment 5 feature 25 (0.00/3): IK_JTranspose: DUE
+    regrade: working
+Assignment 5 feature 25 (2.40/3): IK_JTranspose: PERCENT 80
     error: endeffector does not converge to target for all tests
     warning: endeffector does not monotonically decrease error to local minimum
-Assignment 5 feature 26 (0.00/3): IK_JPseudoinverse: DUE
+    regrade: working
+Assignment 5 feature 26 (2.40/3): IK_JPseudoinverse: PERCENT 80
     error: endeffector does not converge to target for all tests
     warning: endeffector does not monotonically decrease error to local minimum
-Assignment 5 feature 27 (0.00/6): IK_EulerAngles: DUE
+    regrade: working
+Assignment 5 feature 27 (4.80/6): IK_EulerAngles: PERCENT 80
     error: endeffector does not converge to target for all tests
     warning: target endeffector orientation incorrectly transformed
+    regrade: working
 Assignment 6 feature 28 (4.00/4): MotionPlan_Collision: CHECK
     comment: good work
 Assignment 6 feature 29 (2.00/2): MotionPlan_2DRRTConnect: CHECK
@@ -73,12 +78,19 @@ Assignment 7 feature 32 (12.00/12): Pitch: CHECK
     
 Assignment 7 feature 33 (6.00/6): Pitch_Advanced: CHECK
     
-Assignment 8 feature 34 (0.00/4): Advanced: PENDING
-    Pendularm_RandomTrial: PENDING
-    FK_LU: PENDING
-    IK_LU: PENDING
+Assignment 8 feature 34 (5.00/4): Advanced: PERCENT 125
+    Pendularm_RandomTrial: CHECK
+    FK_LU: error: failure on pivoting test, 2 points
+    IK_LU: error: matrix_inverse not called
+    IK_100in60: CHECK
+    IK_DampedLS: CHECK
+    RRT_ArbitraryGoal: CHECK
+    Quiz5_CourseImprovement: Thank you for your helpful feedback.  I hope you find AutoRob to be a good introduction to controls that complements the many excellent control theory courses offered at Michigan.
 Quiz 1: 2.42 of 4
 Quiz 2: 4.00 of 4
 Quiz 3: 3.00 of 4
 Quiz 4: 2.83 of 4
 Quiz 5: 3.67 of 4
+
+Total points: 142.11666666666667
+Final Grade: A
